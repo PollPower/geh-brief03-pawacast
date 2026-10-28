@@ -24,7 +24,7 @@ Two trust tiers, so operators without PollPower hardware can still join:
 
 **Tier 1 — PollPower-metered sites (strongest).**
 1. Each meter reading is signed on the chip by the gateway's secure element (Ed25519). Milestone II showed this on real hardware.
-2. The Meter Authority has registered that gateway key. The EBT v8 contract only mints from readings that pass the three-check gate (secure element, Meter Authority, Producer Registry).
+2. The Meter Authority has registered that gateway key. The EBT v8 contract only mints from readings that pass the three-check gate (secure element signature, Meter Authority key, producer attestation held inside the EBT v8 contract).
 3. The operator builds the monthly record from those settled readings and submits a zero-knowledge proof on Midnight that:
    - the published total and count equal the sum and count of readings already committed in EBT settlement for that site and month;
    - the count is ≥ 10;
