@@ -1,0 +1,16 @@
+# GEH 2026 prior-work tags — geh2026-prior-work
+# Generated 2026-10-28T15:05:02Z
+REPO                       BRANCH       COMMIT                                   STATUS
+contracts                  main         eadc292d6b1c4663489236b01b8cafc2d0847ab7 TAGGED
+pp-settle-service          main         0b0ad17516c7ec8fa22fae918c39cd05b7332e60 TAGGED
+settlement-api             main         df2c5c2ef60e7ffea5e92b0c04ee022ab12d1bbf TAGGED
+meter-authority-service    main         c3be6f4c5ededa247998c691c22dceacd2c50fc3 TAGGED
+gateway-execution          master       479ef0007fe9249d5205dc681268dfa12816896f TAGGED
+pollpower-node-firmware    master       aa74f63431af13db8ca7e82910a23b283bb93125 TAGGED
+pollpower-br-firmware      master       3c8e0830ab271654f3dfc9275407541a24add7fe TAGGED
+pollpower-sfn-firmware     master       ce728f25a4087a9021fbb314a2c5e72b9fececb3 TAGGED
+consumer-standalone        master       9935c26448ee0e59a145b88ec4fb37b3e03e7e91 TAGGED
+producer-standalone        main         d213a83f11a32308b50c87838f97a9fbbaac2e4c TAGGED
+pollpower-v2-api           master       49b0ac25700d88750506315ff8082808ff4bc7f7 TAGGED
+pollpower-ops-dashboard    master       cbe892ce226f00cdb1d76446c4e907152ef3df54 TAGGED
+solar-scouting             main         48b7167202e52a8bf72d17d7fa723d97199c9ffd TAGGED
