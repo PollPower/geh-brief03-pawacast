@@ -20,7 +20,8 @@ def ape(pred, actual):
     return np.abs(pred - actual) / actual
 
 def run(refresh=False) -> dict:
-    s = named_sites().dropna(subset=["lat"]).reset_index(drop=True)
+    # Pre-sprint: set A only. Set B must not be scored before the sprint (EVAL_PLAN.md).
+    s = named_sites().query("eval_set == 'A'").dropna(subset=["lat"]).reset_index(drop=True)
     f = build_features(s, name="named_sites", refresh=refresh).merge(s[["site_id", "country"]], on="site_id")
     e = estimate_frame(f).merge(s, on="site_id")
     # move the mature (month-24) estimate to the month each site was measured

@@ -23,7 +23,8 @@ _BLODGETT = [
     ("Marti",       "2015-04", 29, 24, 2326, 11361,  1.47513, 36.7228, "medium"),
     ("Merile",      "2014-10", 27, 18, 1794, 14676,  1.41568, 37.7224, "medium"),
     ("Namba Koloo", "2014-09", 19,  7,  301,  1392, -1.0229,  34.3051, "low"),
-    ("Olenarau",    "2014-10", 29, 11, 1352,  2526,  None,    None,    "none"),
+    # Olenarau: only a stream of that name is mapped (GeoNames 182313, Kajiado); village position is approximate
+    ("Olenarau",    "2014-10", 29, 11, 1352,  2526, -1.94790, 37.03542, "low"),
     ("Opiroi",      "2014-10", 26, 19, 1565,  2537,  1.15865, 36.8095, "high"),
 ]
 
@@ -38,7 +39,42 @@ def named_sites() -> pd.DataFrame:
     mid = pd.Timestamp("2016-05-31")
     df["months_since_connection"] = ((mid - pd.to_datetime(df.commissioned)).dt.days / DAYS_PER_MONTH).round(1)
     df["site_id"] = "blodgett_" + df.site.str.lower().str.replace(" ", "_")
-    return df
+    # Set A = scored by pre-sprint model v0 (results seen). Set B = never scored before the sprint.
+    df["eval_set"] = df.site.map(lambda s: "B" if s == "Olenarau" else ("unlocated" if s == "Enkoireroi" else "A"))
+    df["segment_note"] = ""
+    return pd.concat([df, _ethiopia()], ignore_index=True)
+
+# Wassie & Ahlgren 2024, Energy Policy 185:113969, Table 1 and section 3.1.3.
+# Site mean kWh/day over May 2021 - Dec 2022 (610 days); customers = Dec 2021 snapshot.
+# Coordinates: paper (Tum) and OSM town centre (Omorate; the paper's printed latitude is malformed).
+def _ethiopia() -> pd.DataFrame:
+    rows = [
+        # site,     commissioned, customers, kWh/day, lat,      lon,      geo_conf, note
+        ("Tum",     "2021-05", 450,  640, 6.25636, 35.52169, "high",
+         "384 households / 40 SMEs / 26 institutions; household billing mean 22.2 kWh/month"),
+        ("Omorate", "2021-05", 443, 1065, 4.80324, 36.05043, "high",
+         "301 households / 112 SMEs / 30 institutions; demand suppressed by load-shedding (13 h/day by Dec 2022)"),
+    ]
+    df = pd.DataFrame(rows, columns=["site", "commissioned", "customers", "kwh_day", "lat", "lon", "geo_conf", "segment_note"])
+    df["n_subset"] = df.customers
+    df["kwh_cust_month"] = df.kwh_day * DAYS_PER_MONTH / df.customers
+    df["survey_kwh_cust_month"] = float("nan")
+    df["months_since_connection"] = 10.0   # midpoint of a 20-month measurement window starting at connection
+    df["country"] = "ET"
+    df["source"] = "Wassie & Ahlgren 2024, Energy Policy 185:113969"
+    df["site_id"] = "wassie_" + df.site.str.lower()
+    df["eval_set"] = "B"
+    return df.drop(columns=["kwh_day"])
+
+# Published sites that CANNOT be located (anonymised or no coordinates). Not scored per site;
+# used only in the aggregate check against country averages (EVAL_PLAN set C).
+UNLOCATED = pd.DataFrame([
+    ("Scott & Coley 2021, Site A (island)", "TZ", 358, 3.17, "Energies 14:4207, Table 3; 2019"),
+    ("Scott & Coley 2021, Site D (village)", "TZ", 135, 2.71, "Energies 14:4207, Table 3; 2019"),
+    ("Hartvigsson et al. 2021, SW highlands hydro", "TZ", 1544, 33.9, "ESD 60:82-89; 3.5 days of logging only"),
+    ("Mthembanji, Dedza", "MW", 60, 8.85, "Strathclyde 2022 technical report; 2021 sales / 60 customers"),
+    ("Sierra Leone, ~40 sites (average)", "SL", None, 5.0, "CrossBoundary night-lights study; '4-6 kWh per month per connection'"),
+], columns=["site", "country", "customers", "kwh_cust_month", "source"])
 
 # AMDA benchmarks, kWh per customer per month.
 AMDA = pd.DataFrame([
@@ -66,5 +102,5 @@ GROWTH = pd.DataFrame([
 ], columns=["source", "observation", "annual_growth"])
 
 REGION = {"KE": "EAST_SOUTH", "TZ": "EAST_SOUTH", "UG": "EAST_SOUTH", "RW": "EAST_SOUTH", "ET": "EAST_SOUTH",
-          "ZM": "EAST_SOUTH", "MG": "EAST_SOUTH", "NG": "WEST_CENTRAL", "SL": "WEST_CENTRAL", "GH": "WEST_CENTRAL",
+          "ZM": "EAST_SOUTH", "MG": "EAST_SOUTH", "MW": "EAST_SOUTH", "NG": "WEST_CENTRAL", "SL": "WEST_CENTRAL", "GH": "WEST_CENTRAL",
           "SN": "WEST_CENTRAL", "CM": "WEST_CENTRAL", "CD": "WEST_CENTRAL", "BJ": "WEST_CENTRAL"}
