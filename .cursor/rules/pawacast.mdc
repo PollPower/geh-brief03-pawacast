@@ -1,0 +1,55 @@
+---
+description: PawaCast (GEH 2026 Brief 03) project rules: always apply
+alwaysApply: true
+---
+
+# PawaCast: rules for the AI coding agent
+
+You are helping Team PollPower build **PawaCast** during the Global Energy Hackathon 2026, Brief 03 "Predict mini-grid demand before building".
+PawaCast gives a demand **range** (P10/P50/P90 kWh per customer per month) for any site from public data, a 24-month growth curve, plain-language drivers for lenders, and narrows the range as meter readings arrive ("forecast first, meters correct").
+
+## Read these first (they are the spec)
+- `EVAL_PLAN.md`: frozen evaluation protocol, including **Amendment 1** (Renewvia split). Follow it exactly.
+- `UI_DESIGN.md`: web app layout, interaction flow, speed and hosting.
+- `REPORT_DESIGN.md`: one-page lender report.
+- `SHARING_DESIGN.md`: meter-data sharing flow (zero-knowledge proofs on Midnight).
+- `SPRINT_RUNSHEET.md` and `SPRINT_PROMPTS.md`: what happens in which hour block.
+- `CHANGELOG.md`: append to the sprint section after every block.
+
+## Hackathon integrity rules (non-negotiable)
+1. **Sprint window:** 30 Oct 2026 12:00 PM ET to 1 Nov 2026 12:00 PM ET. Tag `geh2026-sprint-start` marks the start. Never commit new features before it. Never rewrite history, amend or force-push. Never move or delete tags.
+2. **Held-out data is sealed.** Renewvia sites with `role == "test"` in `pawacast/targets/renewvia_split.csv` (Balep, Bendeghe-Afi, Opu, Ozuzu, Kapelbok) and set B sites (Olenarau, Tum, Omorate) must never be used for fitting, feature selection, hyperparameter choice or plotting during development. They are scored **once**, by `pawacast/evaluate.py`, at the end. Enforce this in code: loading their consumption must raise unless `PAWACAST_FINAL_EVAL=1` is set.
+3. **No tuning on test results.** If anything changes after a held-out score has been seen, report before-and-after numbers and log the change under "Deviations" in `EVAL_PLAN.md`.
+4. **Label anything simulated** as SIMULATED in code, outputs, charts and UI.
+5. **Never fabricate numbers** for the deck, report or README. Every number must come from a script in this repo, with its output saved under `results/`.
+6. Cite data sources in code comments: Renewvia (Zenodo 10.5281/zenodo.22149101, CC BY-SA 4.0), AMDA, Overture Maps, VIIRS (Zenodo 17294744), GridFinder (Zenodo 3628142), Blodgett 2017, Wassie & Ahlgren 2024.
+
+## Environment
+- Windows 11 dev machine ("throne"), Python 3.11, repo at `C:\Users\Garrett\Projects\geh-brief03-pawacast`. The server is Ubuntu, Python 3.12.
+- Shell is PowerShell: avoid inline `python -c` with nested quotes. Write a script file instead. Always read and write text files as UTF-8 (`encoding="utf-8"`, `newline="\n"`). Never use PowerShell `Set-Content` on files containing non-ASCII characters.
+- Data lives in `data/` (git-ignored): `data/raw/renewvia/*.parquet`, `data/raw/viirs/`, `data/raw/gridfinder/`, `data/features/*.parquet` cache.
+- Renewvia: use the gap-filled `sparkmeterreadings_clean_<Site>.parquet` files (15-min). Inspect schemas before using them. `customers.parquet` has `meterRole` and `tariff`; use `meterRole == "Customer Meter"` only. Site metadata (coords, `powerOnDate`, capex, `sizePv`) is in `minigridprojects.parquet`.
+- Memory: the server has ~1 GB free RAM. Process big parquet files with DuckDB or pyarrow in chunks or with column projection, never `pd.read_parquet` on a multi-GB file. For DuckDB: `SET memory_limit='400MB'; SET threads=2`.
+
+## Existing code (don't rewrite without reason)
+- `pawacast/features/`: `build_features(sites_df, name=...)` gives Overture buildings/places, VIIRS, GridFinder distance. Overture lookups are slow (30–80 s per cluster), so cache.
+- `pawacast/model/prior.py`: v0 structural model (AMDA baseline × multipliers), `estimate()` returns P10/P50/P90 plus drivers.
+- `pawacast/model/growth.py` and `update.py`: growth curve and Bayesian meter update.
+- `pawacast/evaluate.py`: v0 evaluation on set A. Extend it per EVAL_PLAN; keep v0 results reproducible as a baseline.
+- `pawacast/cli.py`: command-line report.
+- `pawacast/targets/`: `public.py` (published sites, AMDA), `demo.py` (Ewaso Ngiro, Narok town, Maji Moto), `renewvia_split.py`.
+
+## Modelling guidance
+- Unit of evaluation is the **site**; split by the pre-registered groups only.
+- Target: mean kWh per active customer meter per month, by months since `powerOnDate`. Drop site-months with fewer than 10 active customer meters.
+- Must run on a laptop; prefer simple, explainable models: hierarchical/log-linear or LightGBM quantile with monotone constraints. Report P10/P50/P90 and coverage.
+- Drivers must be plain-language and lender-readable (see REPORT_DESIGN.md).
+- Cost estimate: derive from Renewvia `capex`, `sizePv`, `sizeBattery` and customer counts (USD per kWp, per connection). State assumptions.
+
+## Web app
+Streamlit, `app/streamlit_app.py`, per UI_DESIGN.md. PollPower design system: Sun #FFD93D, Flare #FF6B35, Plasma #FF3366, Ash #0D0D0D; Bebas Neue headings, Space Mono labels, Inter body. Demo sites pre-computed. No logging of user coordinates.
+
+## Workflow
+- Small commits with clear messages; push after each working step. Update `CHANGELOG.md` (sprint section, current hour block) as you go.
+- Run what you write. Show outputs, not claims. If a step fails, say so plainly.
+- Ask before deleting data, changing EVAL_PLAN.md, touching other PollPower repos or servers, or adding a dependency over ~50 MB.
