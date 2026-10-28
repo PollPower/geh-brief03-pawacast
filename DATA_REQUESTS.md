@@ -98,4 +98,4 @@ Founder, PollPower · Poll Power Limited · pollpower.energy
 | 28 Oct 2026 | communications@africamda.org | AMDA | awaiting |
 | 28 Oct 2026 | communications@crossboundary.com | CrossBoundary Innovation Lab | awaiting |
 | 28 Oct 2026 | erik.ahlgren@chalmers.se | Wassie & Ahlgren (Chalmers) | awaiting |
-| not sent | nicholas.selby@renewvia.com | Renewvia (Carabajal et al.) | |
+| 28 Oct 2026 | nicholas.selby@renewvia.com | Renewvia (Carabajal et al.) | awaiting |
