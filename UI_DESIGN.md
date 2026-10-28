@@ -86,7 +86,7 @@ Target: **https://pawacast.pollpower.energy**
 |---|---|---|
 | DNS record for `pawacast.pollpower.energy` → relay server | Pre-sprint (environment) | OpenClaw |
 | nginx server block, TLS certificate, static "PawaCast — coming 1 Nov" placeholder | Pre-sprint (environment) | OpenClaw |
-| Python 3.11 venv on relay with `requirements.txt` | Pre-sprint (environment) | OpenClaw |
+| Python 3.12 venv on relay (system Python) with `requirements.txt` | Pre-sprint (environment) | OpenClaw |
 | Deploy the app: `git pull`, pm2 process `pawacast` on 127.0.0.1:8501, nginx proxy with websocket upgrade (Streamlit needs it) | Sprint, after the app works locally | OpenClaw |
 | Copy cached demo-site features to the server | Sprint | OpenClaw |
 
