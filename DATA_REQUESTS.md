@@ -98,4 +98,4 @@ Founder, PollPower · Poll Power Limited · pollpower.energy
 | 28 Oct 2026 | communications@africamda.org | AMDA | awaiting |
 | 28 Oct 2026 | communications@crossboundary.com | CrossBoundary Innovation Lab | awaiting |
 | 28 Oct 2026 | erik.ahlgren@chalmers.se | Wassie & Ahlgren (Chalmers) | awaiting |
-| 28 Oct 2026 | nicholas.selby@renewvia.com | Renewvia (Carabajal et al.) | 28 Oct: survey CSVs at github.com/Renewvia-Energy/impact-analysis; published 24-site operational dataset same day, Zenodo 10.5281/zenodo.22149101 (CC BY-SA 4.0) |
+| 28 Oct 2026 | nicholas.selby@renewvia.com | Renewvia (Carabajal et al.) | 28 Oct: survey CSVs at github.com/Renewvia-Energy/impact-analysis; published 24-site operational dataset same day, Zenodo 10.5281/zenodo.22149101 (CC BY-SA 4.0). 29 Oct: data descriptor submitted to Scientific Data — cite it once published, else the Zenodo dataset; docs repo github.com/Renewvia-Energy/minigrid-dataset |

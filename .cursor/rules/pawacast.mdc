@@ -28,6 +28,7 @@ PawaCast gives a demand **range** (P10/P50/P90 kWh per customer per month) for a
 - Windows 11 dev machine ("throne"), Python 3.11, repo at `C:\Users\Garrett\Projects\geh-brief03-pawacast`. The server is Ubuntu, Python 3.12.
 - Shell is PowerShell: avoid inline `python -c` with nested quotes. Write a script file instead. Always read and write text files as UTF-8 (`encoding="utf-8"`, `newline="\n"`). Never use PowerShell `Set-Content` on files containing non-ASCII characters.
 - Data lives in `data/` (git-ignored): `data/raw/renewvia/*.parquet`, `data/raw/viirs/`, `data/raw/gridfinder/`, `data/features/*.parquet` cache.
+- Renewvia docs: read `data/raw/renewvia_docs/Data Dictionary.md` (column meanings, units, quality flags) and `notes.md` before writing the Block 1 pipeline. That repo (github.com/Renewvia-Energy/minigrid-dataset) has **no licence**: read it for understanding, but do not copy its code into this repo. Write our own.
 - Renewvia: use the gap-filled `sparkmeterreadings_clean_<Site>.parquet` files (15-min). Inspect schemas before using them. `customers.parquet` has `meterRole` and `tariff`; use `meterRole == "Customer Meter"` only. Site metadata (coords, `powerOnDate`, capex, `sizePv`) is in `minigridprojects.parquet`.
 - Memory: the server has ~1 GB free RAM. Process big parquet files with DuckDB or pyarrow in chunks or with column projection, never `pd.read_parquet` on a multi-GB file. For DuckDB: `SET memory_limit='400MB'; SET threads=2`.
 

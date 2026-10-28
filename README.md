@@ -31,4 +31,11 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+## Data credits
+
+- **Renewvia operational dataset** (24 mini-grids, Kenya and Nigeria): Selby, N. *High-Frequency, Multi-Domain Operational Dataset for Community Solar Mini-Grids in Kenya and Nigeria.* Zenodo, 2026. https://doi.org/10.5281/zenodo.22149101 — CC BY-SA 4.0.
+  A data descriptor with the same title has been submitted to *Scientific Data* (Oct 2026). **Cite the published descriptor once it is out; until then cite the Zenodo dataset** (Renewvia's stated preference). Anything we publish that is derived from this data is released under CC BY-SA 4.0 with attribution.
+  Documentation and data dictionary: https://github.com/Renewvia-Energy/minigrid-dataset
+- Overture Maps Foundation (ODbL / CDLA-Permissive); VIIRS annual night lights, OpenGeoHub (Zenodo 17294744, CC BY 4.0); GridFinder, Arderne et al. 2020 (Zenodo 3628142, CC BY 4.0); AMDA *Benchmarking Africa's Minigrids*; Blodgett et al. 2017; Wassie & Ahlgren 2024.
+
 Licence: to be decided before submission.
