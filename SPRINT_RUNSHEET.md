@@ -10,8 +10,8 @@ Roles: **Garrett** — model, code, demo. **Timothy** — legal, data-sharing te
 
 - [x] Repo, features, v0 model, EVAL_PLAN.md, SHARING_DESIGN.md, REPORT_DESIGN.md (pre-sprint, disclosed)
 - [ ] Prior-work tag runs 29 Oct 00:05 JST (scheduled on throne) — check `prior-work-tags.txt`
-- [ ] Timothy sends the DATA_REQUESTS.md emails (29 Oct)
-- [ ] Jonathan picks 3 demo locations with coordinates: a quiet pastoral village, a market town, a PollPower candidate site
+- [ ] Garrett sends the DATA_REQUESTS.md emails (29 Oct)
+- [ ] Garrett picks 3 demo locations with coordinates: a quiet pastoral village, a market town, a PollPower candidate site
 - [ ] Kick-off 29 Oct 8 PM ET (30 Oct 09:00 JST): note the portal, file rules, judge repo access
 - [ ] Coach requested in #innovators-digital-solutions-apps-ai-ml
 - [ ] Sprint-start tag runs 31 Oct 01:00 JST (scheduled on throne)

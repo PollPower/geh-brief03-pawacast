@@ -1,6 +1,6 @@
 # Data requests (drafts, 28 Oct 2026)
 
-Sender: Timothy Kabui (legal lead) with Garrett de Rosset in copy. Fill in the recipient address from the organisation's website before sending; none are guessed here.
+Sender: Garrett de Rosset. Fill in the recipient address from the organisation's website before sending; none are guessed here.
 Log each send and reply in the table at the bottom — it is evidence for the data-sharing deliverable either way.
 
 ---
@@ -24,8 +24,7 @@ We would agree to a data-sharing agreement of your choosing: no site or develope
 Even a small sample (20–50 sites) would make a real difference. If timing allows a reply before 30 October that would be ideal, but we'd welcome it afterwards too.
 
 Kind regards,
-Timothy Kabui
-Poll Power Limited · pollpower.energy
+Garrett de Rosset`nFounder, PollPower � Poll Power Limited · pollpower.energy
 
 ---
 
@@ -42,8 +41,7 @@ Our gap is held-out testing: there is no open site-level metered dataset. Would 
 We're happy to sign a data-sharing agreement, publish nothing that identifies a site or developer, and share results and code with you first.
 
 Kind regards,
-Timothy Kabui
-Poll Power Limited · pollpower.energy
+Garrett de Rosset`nFounder, PollPower � Poll Power Limited · pollpower.energy
 
 ---
 
@@ -58,8 +56,7 @@ We read your [year] paper on [topic] with great interest. We're building an open
 Would you be able to share the site-level monthly consumption series behind [Figure/Table], with customer counts and commissioning dates? Anonymised or aggregated data is fine. We'll cite the paper and the dataset, use it only for validation, and send you our results.
 
 With thanks,
-Timothy Kabui
-Poll Power Limited · pollpower.energy
+Garrett de Rosset`nFounder, PollPower � Poll Power Limited · pollpower.energy
 
 ---
 
