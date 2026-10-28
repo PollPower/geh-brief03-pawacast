@@ -21,7 +21,7 @@ Roles: **Garrett** — model, code, demo. **Timothy** — legal, data-sharing te
 
 | Hours | JST / EAT | Garrett | Timothy | Jonathan |
 |---|---|---|---|---|
-| 00–05 | Sat 01:00–06:00 / Fri 19:00–Sat 00:00 | Confirm brief choice in portal; pull features for set B sites | Log any data-request replies; start DPA note | Write up the 3 demo sites: what people use power for now, likely first purchases (Starter Q2/Q3) |
+| 00–05 | Sat 01:00–06:00 / Fri 19:00–Sat 00:00 | Confirm brief choice in portal; build monthly kWh per customer for the 24 Renewvia sites (first read of consumption); pull features for Renewvia + set B sites | Log any data-request replies; start DPA note | Write up the 3 demo sites: what people use power for now, likely first purchases (Starter Q2/Q3) |
 | 05–12 | Sat 06:00–13:00 / 00:00–07:00 | Improved model: business-demand signal, country/segment calibration (parameters from literature only) | Rest | Rest |
 | 12–16 | Sat 13:00–17:00 / 07:00–11:00 | **Run EVAL_PLAN on set B** — first unseen-site number | Data-sharing agreement draft (SHARING_DESIGN §5) | Field footage for pitch: a site, a meter, a customer (consent first) |
 | 16–24 | Sat 17:00–Sun 01:00 / 11:00–19:00 | **Web app** (UI_DESIGN.md): map, answer card, drivers, growth, meters-correct; lender report download | One-page summary draft | Community section of the pitch: what operators/communities need to share data |
