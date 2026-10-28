@@ -1,0 +1,11 @@
+{
+  "n_sites": 6,
+  "median_ape": {
+    "pawacast": 0.596952255557357,
+    "amda": 0.4550567150631929,
+    "brief20": 6.378028191254938,
+    "survey": 3.7544677672304703
+  },
+  "coverage_p10_p90": 0.8333333333333334,
+  "note": "Held-out published sites (Blodgett et al. 2017, Kenya). Not used to set any parameter."
+}

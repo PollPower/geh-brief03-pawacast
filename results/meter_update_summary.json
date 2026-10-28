@@ -1,0 +1,30 @@
+{
+  "label": "SIMULATED monthly readings around measured annual averages",
+  "by_months": [
+    {
+      "months_of_readings": 0,
+      "median_ape": 0.596952255557357,
+      "width_vs_prior": 1.0
+    },
+    {
+      "months_of_readings": 1,
+      "median_ape": 0.3903214910092765,
+      "width_vs_prior": 0.38189391140627904
+    },
+    {
+      "months_of_readings": 3,
+      "median_ape": 0.0388741370527142,
+      "width_vs_prior": 0.23171784601365444
+    },
+    {
+      "months_of_readings": 6,
+      "median_ape": 0.07665847392939804,
+      "width_vs_prior": 0.1660200255355295
+    },
+    {
+      "months_of_readings": 12,
+      "median_ape": 0.06428610116348714,
+      "width_vs_prior": 0.11818305714872156
+    }
+  ]
+}
