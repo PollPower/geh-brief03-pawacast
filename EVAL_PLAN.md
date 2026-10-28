@@ -56,6 +56,32 @@ The sprint model only "improves" if it beats **both** the AMDA country average a
 
 Set B is whatever is in `pawacast/targets/public.py` at the `geh2026-sprint-start` tag. The git history shows when each site was added.
 
+## Amendment 1 — Renewvia operational data (28 Oct 2026, before the sprint)
+
+On 28 Oct 2026 Renewvia published an anonymised operational dataset for 24 of its community solar mini-grids in Kenya and Nigeria
+(Selby, Zenodo 10.5281/zenodo.22149101, CC BY-SA 4.0): site coordinates, power-on dates, system size and capex, 11,942 customer
+records with tariff class (residential / commercial / institution), and 15-minute smart-meter consumption.
+
+This is the "metered consumption from live sites" the brief marks "partner needed", so it becomes the main evaluation data.
+The split below was fixed **before any consumption value was read** — only names and coordinates were used — and is committed in
+`pawacast/targets/renewvia_split.py` / `renewvia_split.csv`.
+
+| Set | Sites | Use |
+|---|---|---|
+| **R-test** | Balep, Bendeghe-Afi, Opu, Ozuzu (Nigeria); Kapelbok (Kenya) — 5 sites, 3 groups | Scored once, at the end of the sprint. Never used for fitting or tuning. **Headline number.** |
+| **R-train** | the other 19 sites, 13 groups | May be used to fit the model during the sprint. Also scored by leave-one-group-out cross-validation (secondary number). |
+| **B** | Olenarau, Tum, Omorate (published) | Unchanged: unseen, scored at the end of the sprint. |
+| **A** | 6 Blodgett sites | Unchanged: seen, reported for continuity. |
+
+Grouping keeps near-neighbour sites (same settlement, same island cluster, within a few km) on the same side of the split.
+Groups were assigned by hash, not by hand; the result happens to put only one Kenyan site in R-test, and it is kept as drawn.
+
+Target on Renewvia sites: mean kWh per **customer meter** per month (meterRole = "Customer Meter"), computed from the gap-filled
+15-minute product, by months since power-on. Totalizer, repeater and generator meters are excluded. Months with fewer than 10
+active customer meters are dropped (same k ≥ 10 rule as SHARING_DESIGN.md).
+
+Licence: CC BY-SA 4.0 — any derived dataset we publish (site-month aggregates) is released under CC BY-SA 4.0 with attribution.
+
 ## Deviations
 
 None yet.

@@ -1,0 +1,25 @@
+projectName,country,lat,long,powerOnDate,group,role
+Balep,Nigeria,6.12106667,8.68638889,2022-02-07,cross_river,test
+Bendeghe-Afi,Nigeria,6.11563889,8.72805556,2022-02-07,cross_river,test
+Opu,Nigeria,6.117933331,8.696388891,2022-01-10,cross_river,test
+Kapelbok,Kenya,2.098367,35.41801389,2021-09-30,kapelbok,test
+Ozuzu,Nigeria,5.1278132138,6.9968108915,2020-01-15,ozuzu,test
+Akipelai,Nigeria,4.63029167,6.33916667,2020-01-15,bayelsa,train
+Emakalakala,Nigeria,4.65,6.34,2024-12-10,bayelsa,train
+Oloibiri,Nigeria,4.66651389,6.30861111,2020-03-24,bayelsa,train
+Ekong Anaku,Nigeria,5.105617,8.66388889,2022-01-16,ekong_anaku,train
+Emereoke,Nigeria,4.5048,7.67138889,2022-04-18,emereoke,train
+Kangitan Kori,Kenya,2.432766667,35.42652778,2021-11-13,kangitan_kori,train
+Katiko,Kenya,3.79544,35.836945,2021-09-27,katiko,train
+Ndeda,Kenya,-0.221819,34.116985,2018-09-01,lake_victoria,train
+Oyamo,Kenya,-0.2304897789,34.149318,2020-01-14,lake_victoria,train
+Ringiti,Kenya,-0.455455,33.932718,2018-09-01,lake_victoria,train
+Locheremoit,Kenya,2.759362,35.647782,2021-09-30,locheremoit,train
+Lomekwi,Kenya,3.915644444,35.83663611,2021-09-27,lomekwi,train
+Lorengelup,Kenya,3.048013,35.943718,2021-11-24,lorengelup,train
+Nakukulas,Kenya,2.200202,35.812718,2021-10-12,nakukulas,train
+Ngurunit,Kenya,1.7406,37.31388889,2020-01-15,ngurunit,train
+Olkiramatian,Kenya,-1.87170849,36.150046876,2021-02-04,olkiramatian,train
+Kakuma 3 - Okapi,Kenya,3.766381,34.825483,2022-12-16,turkana_west,train
+Kalobeyei Settlement,Kenya,3.77208611,34.73222222,2019-09-01,turkana_west,train
+Kalobeyei Town,Kenya,3.76706667,34.62583333,2019-09-01,turkana_west,train
