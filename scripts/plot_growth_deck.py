@@ -11,47 +11,75 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import pandas as pd
 
 from pawacast.model.growth import observed_curve
-from pawacast.targets.renewvia import load_site_months
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "results"
-SUN, FLARE, PLASMA, ASH = "#FFD93D", "#FF6B35", "#FF3366", "#0D0D0D"
+SUN, FLARE, MUTED = "#FFD93D", "#FF6B35", "#888888"
+W, H, DPI = 1600, 900, 100
+PX_TO_PT = 72.0 / DPI
 
 
 def main():
     g = json.loads((OUT / "cv_train.json").read_text(encoding="utf-8"))["growth"]
     curve = observed_curve(g, months=range(0, 25))
-    sm = load_site_months(role="train")
-    sm = sm[(sm.kwh_cust_month > 0) & (sm.months_since_power_on.between(0, 24))]
+    p50_0 = float(curve.loc[curve.month == 0, "p50"].iloc[0])
+    p50_12 = float(curve.loc[curve.month == 12, "p50"].iloc[0])
+    p50_24 = float(curve.loc[curve.month == 24, "p50"].iloc[0])
+    p90_24 = float(curve.loc[curve.month == 24, "p90"].iloc[0])
 
-    fig, ax = plt.subplots(figsize=(10.0, 5.4), dpi=160)
+    plt.rcParams.update({"font.family": "sans-serif", "font.size": 13})
+    fig, ax = plt.subplots(figsize=(W / DPI, H / DPI), dpi=DPI)
     fig.patch.set_alpha(0.0)
     ax.set_facecolor("none")
-    for _, gg in sm.groupby("projectName"):
-        gg = gg.sort_values("months_since_power_on")
-        ax.plot(gg.months_since_power_on, gg.kwh_cust_month, color="#bbbbbb", lw=0.9, alpha=0.55)
-    ax.fill_between(curve.month, curve.p10, curve.p90, color=FLARE, alpha=0.32, linewidth=0, zorder=2)
-    ax.plot(curve.month, curve.p50, color=PLASMA, lw=2.8, zorder=3, label="median (frozen slope)")
-    ax.axvline(12, color="#dddddd", lw=0.8, zorder=1)
+
+    ax.fill_between(
+        curve.month, curve.p10, curve.p90,
+        color=FLARE, alpha=0.25, linewidth=0, edgecolor="none", zorder=2,
+    )
+    ax.plot(curve.month, curve.p50, color=SUN, lw=4 * PX_TO_PT, solid_capstyle="butt", zorder=3)
+
+    ax.annotate(
+        f" {p50_0:.1f}", xy=(0, p50_0), xytext=(0, 6),
+        textcoords="offset points", color="#FFFFFF", fontsize=14,
+        ha="left", va="bottom", fontfamily="sans-serif", zorder=4,
+    )
+    ax.annotate(
+        f"{p50_24:.1f}", xy=(24, p50_24), xytext=(0, 6),
+        textcoords="offset points", color="#FFFFFF", fontsize=14,
+        ha="right", va="bottom", fontfamily="sans-serif", zorder=4,
+    )
+    ax.annotate(
+        "80% range", xy=(24, p90_24), xytext=(0, 6),
+        textcoords="offset points", color=MUTED, fontsize=12,
+        ha="right", va="bottom", fontfamily="sans-serif", zorder=4,
+    )
+
     ax.set_xlim(0, 24)
-    ax.set_ylim(0, 22)
-    ax.set_xlabel("months since connection", color=ASH)
-    ax.set_ylabel("kWh per customer per month", color=ASH)
-    ax.tick_params(colors=ASH)
+    ax.set_ylim(0, 10)
+    ax.set_xticks([0, 6, 12, 18, 24])
+    ax.set_yticks([0, 5, 10])
+    ax.set_xlabel("Months after connection", color=MUTED, fontsize=13, fontfamily="sans-serif")
+    ax.set_ylabel("kWh per customer per month", color=MUTED, fontsize=13, fontfamily="sans-serif")
+    ax.tick_params(colors=MUTED, labelsize=13, width=1)
+    for lab in ax.get_xticklabels() + ax.get_yticklabels():
+        lab.set_fontfamily("sans-serif")
+        lab.set_fontsize(13)
+        lab.set_color(MUTED)
+    ax.grid(False)
     for sp in ("top", "right"):
         ax.spines[sp].set_visible(False)
     for sp in ("left", "bottom"):
-        ax.spines[sp].set_color(ASH)
-    ax.set_title("Demand after connection", color=ASH, loc="left", fontsize=14, pad=10)
-    fig.text(0.04, 0.02, "most sites flat after year 1", color=ASH, fontsize=11, style="italic")
-    fig.tight_layout(rect=(0, 0.06, 1, 1))
-    path = OUT / "growth_curve_deck.png"
-    fig.savefig(path, dpi=160, transparent=True)
+        ax.spines[sp].set_color(MUTED)
+
+    fig.subplots_adjust(left=0.08, right=0.97, bottom=0.12, top=0.96)
+    path = OUT / "growth_curve_deck_dark.png"
+    fig.savefig(path, dpi=DPI, transparent=True, facecolor="none")
     plt.close(fig)
-    print(f"wrote {path}  slope={g['slope']:.4f}  annual_12_24={100 * g['annual_12_24']:.1f}%")
+    print(f"wrote {path}")
+    print(f"P50 month 0={p50_0:.6f}  12={p50_12:.6f}  24={p50_24:.6f}")
+    print(f"slope={g['slope']:.6f}")
 
 
 if __name__ == "__main__":
