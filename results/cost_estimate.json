@@ -1,0 +1,419 @@
+{
+  "source": "Renewvia minigridprojects + customers (meterRole=Customer Meter). Zenodo 10.5281/zenodo.22149101, CC BY-SA 4.0.",
+  "capex_unit": "Treated as USD. Dictionary says local currency; values and Renewvia's own kUSD carbon chart only make sense as USD (Kalobeyei Settlement 541 kWp at 967,872 KES would be ~$7k).",
+  "dropped_from_unit_costs": [
+    "Emakalakala",
+    "Kakuma 3 - Okapi"
+  ],
+  "overall": {
+    "usd_per_kwp": {
+      "n": 22,
+      "median": 8584.698981573982,
+      "p10": 5242.833717374608,
+      "p90": 14933.170405982908,
+      "min": 1787.7207240487626,
+      "max": 18285.25641025641
+    },
+    "usd_per_kwh_storage": {
+      "n": 22,
+      "median": 4051.436936936937,
+      "p10": 2118.5860700249254,
+      "p90": 8356.159909909911,
+      "min": 875.9022624434389,
+      "max": 11564.189189189188
+    },
+    "usd_per_connection": {
+      "n": 22,
+      "median": 867.5756807511736,
+      "p10": 501.45075550685306,
+      "p90": 2044.1565612597633,
+      "min": 148.2419972430694,
+      "max": 2662.915966386555
+    }
+  },
+  "by_country": {
+    "Kenya": {
+      "usd_per_kwp": {
+        "n": 14,
+        "median": 8228.80569075988,
+        "p10": 6328.974417344173,
+        "p90": 11299.050427350428,
+        "min": 1787.7207240487626,
+        "max": 16216.82242990654
+      },
+      "usd_per_kwh_storage": {
+        "n": 14,
+        "median": 3852.7293202293204,
+        "p10": 1733.6867230413416,
+        "p90": 4765.646396396397,
+        "min": 875.9022624434389,
+        "max": 7062.837837837838
+      },
+      "usd_per_connection": {
+        "n": 14,
+        "median": 1040.8510101010102,
+        "p10": 457.68977963759215,
+        "p90": 2367.7397260273974,
+        "min": 148.2419972430694,
+        "max": 2662.915966386555
+      },
+      "kwh_storage_per_kwp": {
+        "n": 14,
+        "median": 2.0770963783368455,
+        "p10": 1.5163096727121117,
+        "p90": 4.064264136694043,
+        "min": 1.1526479750778815,
+        "max": 4.336996336996337
+      },
+      "kwp_per_connection": {
+        "n": 14,
+        "median": 0.12697749774977496,
+        "p10": 0.06864677000988142,
+        "p90": 0.21595064805583253,
+        "min": 0.05845208845208845,
+        "max": 0.3082191780821918
+      },
+      "n_sites": 14
+    },
+    "Nigeria": {
+      "usd_per_kwp": {
+        "n": 8,
+        "median": 11833.288817663819,
+        "p10": 5045.084670231729,
+        "p90": 15999.09455128205,
+        "min": 4808.392751039811,
+        "max": 18285.25641025641
+      },
+      "usd_per_kwh_storage": {
+        "n": 8,
+        "median": 7483.755630630631,
+        "p10": 3580.4273401973405,
+        "p90": 9737.0,
+        "min": 3542.509652509653,
+        "max": 11564.189189189188
+      },
+      "usd_per_connection": {
+        "n": 8,
+        "median": 764.6154500354359,
+        "p10": 688.75643728223,
+        "p90": 928.9481127303384,
+        "min": 639.3797909407665,
+        "max": 1004.2434782608696
+      },
+      "kwh_storage_per_kwp": {
+        "n": 8,
+        "median": 1.5811965811965814,
+        "p10": 1.3368983957219254,
+        "p90": 2.0753205128205128,
+        "min": 1.3368983957219254,
+        "max": 2.767094017094017
+      },
+      "kwp_per_connection": {
+        "n": 8,
+        "median": 0.06300285080772886,
+        "p10": 0.04689831932773109,
+        "p90": 0.18907652655666624,
+        "min": 0.03932773109243697,
+        "max": 0.19513043478260866
+      },
+      "n_sites": 8
+    }
+  },
+  "sites": [
+    {
+      "projectName": "Akipelai",
+      "country": "Nigeria",
+      "sizePv": 67.32,
+      "sizeBattery": 90.0,
+      "capex": 323701.0,
+      "n_customer_meters": 361,
+      "usd_per_kwp": 4808.392751039811,
+      "usd_per_kwh_storage": 3596.677777777778,
+      "usd_per_connection": 896.6786703601108
+    },
+    {
+      "projectName": "Balep",
+      "country": "Nigeria",
+      "sizePv": 9.36,
+      "sizeBattery": 14.8,
+      "capex": 171150.0,
+      "n_customer_meters": 238,
+      "usd_per_kwp": 18285.25641025641,
+      "usd_per_kwh_storage": 11564.189189189188,
+      "usd_per_connection": 719.1176470588235
+    },
+    {
+      "projectName": "Bendeghe-Afi",
+      "country": "Nigeria",
+      "sizePv": 18.72,
+      "sizeBattery": 29.6,
+      "capex": 218907.0,
+      "n_customer_meters": 308,
+      "usd_per_kwp": 11693.75,
+      "usd_per_kwh_storage": 7395.506756756757,
+      "usd_per_connection": 710.737012987013
+    },
+    {
+      "projectName": "Ekong Anaku",
+      "country": "Nigeria",
+      "sizePv": 12.48,
+      "sizeBattery": 22.2,
+      "capex": 187441.0,
+      "n_customer_meters": 213,
+      "usd_per_kwp": 15019.310897435897,
+      "usd_per_kwh_storage": 8443.288288288288,
+      "usd_per_connection": 880.0046948356808
+    },
+    {
+      "projectName": "Emereoke",
+      "country": "Nigeria",
+      "sizePv": 28.08,
+      "sizeBattery": 44.4,
+      "capex": 336197.0,
+      "n_customer_meters": 415,
+      "usd_per_kwp": 11972.827635327636,
+      "usd_per_kwh_storage": 7572.004504504504,
+      "usd_per_connection": 810.1132530120482
+    },
+    {
+      "projectName": "Kalobeyei Settlement",
+      "country": "Kenya",
+      "sizePv": 541.4,
+      "sizeBattery": 1105.0,
+      "capex": 967872.0,
+      "n_customer_meters": 6529,
+      "usd_per_kwp": 1787.7207240487626,
+      "usd_per_kwh_storage": 875.9022624434389,
+      "usd_per_connection": 148.2419972430694
+    },
+    {
+      "projectName": "Kalobeyei Town",
+      "country": "Kenya",
+      "sizePv": 20.12,
+      "sizeBattery": 60.0,
+      "capex": 181324.0,
+      "n_customer_meters": 253,
+      "usd_per_kwp": 9012.127236580516,
+      "usd_per_kwh_storage": 3022.0666666666666,
+      "usd_per_connection": 716.695652173913
+    },
+    {
+      "projectName": "Kangitan Kori",
+      "country": "Kenya",
+      "sizePv": 22.47,
+      "sizeBattery": 44.4,
+      "capex": 172366.0,
+      "n_customer_meters": 118,
+      "usd_per_kwp": 7670.939029817535,
+      "usd_per_kwh_storage": 3882.1171171171172,
+      "usd_per_connection": 1460.7288135593221
+    },
+    {
+      "projectName": "Kapelbok",
+      "country": "Kenya",
+      "sizePv": 36.9,
+      "sizeBattery": 51.8,
+      "capex": 225445.0,
+      "n_customer_meters": 198,
+      "usd_per_kwp": 6109.620596205962,
+      "usd_per_kwh_storage": 4352.220077220078,
+      "usd_per_connection": 1138.611111111111
+    },
+    {
+      "projectName": "Katiko",
+      "country": "Kenya",
+      "sizePv": 27.0,
+      "sizeBattery": 74.0,
+      "capex": 316887.0,
+      "n_customer_meters": 119,
+      "usd_per_kwp": 11736.555555555555,
+      "usd_per_kwh_storage": 4282.256756756757,
+      "usd_per_connection": 2662.915966386555
+    },
+    {
+      "projectName": "Locheremoit",
+      "country": "Kenya",
+      "sizePv": 38.52,
+      "sizeBattery": 81.4,
+      "capex": 311220.0,
+      "n_customer_meters": 330,
+      "usd_per_kwp": 8079.439252336448,
+      "usd_per_kwh_storage": 3823.341523341523,
+      "usd_per_connection": 943.0909090909091
+    },
+    {
+      "projectName": "Lomekwi",
+      "country": "Kenya",
+      "sizePv": 22.5,
+      "sizeBattery": 44.4,
+      "capex": 153918.0,
+      "n_customer_meters": 73,
+      "usd_per_kwp": 6840.8,
+      "usd_per_kwh_storage": 3466.6216216216217,
+      "usd_per_connection": 2108.4657534246576
+    },
+    {
+      "projectName": "Lorengelup",
+      "country": "Kenya",
+      "sizePv": 9.63,
+      "sizeBattery": 37.0,
+      "capex": 156168.0,
+      "n_customer_meters": 63,
+      "usd_per_kwp": 16216.82242990654,
+      "usd_per_kwh_storage": 4220.756756756757,
+      "usd_per_connection": 2478.8571428571427
+    },
+    {
+      "projectName": "Nakukulas",
+      "country": "Kenya",
+      "sizePv": 38.52,
+      "sizeBattery": 44.4,
+      "capex": 313590.0,
+      "n_customer_meters": 214,
+      "usd_per_kwp": 8140.965732087227,
+      "usd_per_kwh_storage": 7062.837837837838,
+      "usd_per_connection": 1465.3738317757009
+    },
+    {
+      "projectName": "Ndeda",
+      "country": "Kenya",
+      "sizePv": 23.79,
+      "sizeBattery": 44.4,
+      "capex": 197853.0,
+      "n_customer_meters": 407,
+      "usd_per_kwp": 8316.645649432536,
+      "usd_per_kwh_storage": 4456.148648648649,
+      "usd_per_connection": 486.12530712530713
+    },
+    {
+      "projectName": "Ngurunit",
+      "country": "Kenya",
+      "sizePv": 27.72,
+      "sizeBattery": 115.3,
+      "capex": 234403.0,
+      "n_customer_meters": 202,
+      "usd_per_kwp": 8456.096681096682,
+      "usd_per_kwh_storage": 2032.9835212489158,
+      "usd_per_connection": 1160.4108910891089
+    },
+    {
+      "projectName": "Olkiramatian",
+      "country": "Kenya",
+      "sizePv": 6.24,
+      "sizeBattery": 22.2,
+      "capex": 64136.0,
+      "n_customer_meters": 75,
+      "usd_per_kwp": 10278.205128205127,
+      "usd_per_kwh_storage": 2889.009009009009,
+      "usd_per_connection": 855.1466666666666
+    },
+    {
+      "projectName": "Oloibiri",
+      "country": "Nigeria",
+      "sizePv": 67.32,
+      "sizeBattery": 90.0,
+      "capex": 346464.0,
+      "n_customer_meters": 345,
+      "usd_per_kwp": 5146.524064171123,
+      "usd_per_kwh_storage": 3849.6,
+      "usd_per_connection": 1004.2434782608696
+    },
+    {
+      "projectName": "Opu",
+      "country": "Nigeria",
+      "sizePv": 14.04,
+      "sizeBattery": 22.2,
+      "capex": 198777.0,
+      "n_customer_meters": 280,
+      "usd_per_kwp": 14157.905982905984,
+      "usd_per_kwh_storage": 8953.91891891892,
+      "usd_per_connection": 709.9178571428571
+    },
+    {
+      "projectName": "Oyamo",
+      "country": "Kenya",
+      "sizePv": 12.48,
+      "sizeBattery": 22.2,
+      "capex": 108742.0,
+      "n_customer_meters": 148,
+      "usd_per_kwp": 8713.301282051281,
+      "usd_per_kwh_storage": 4898.288288288289,
+      "usd_per_connection": 734.7432432432432
+    },
+    {
+      "projectName": "Ozuzu",
+      "country": "Nigeria",
+      "sizePv": 18.72,
+      "sizeBattery": 51.8,
+      "capex": 183502.0,
+      "n_customer_meters": 287,
+      "usd_per_kwp": 9802.457264957266,
+      "usd_per_kwh_storage": 3542.509652509653,
+      "usd_per_connection": 639.3797909407665
+    },
+    {
+      "projectName": "Ringiti",
+      "country": "Kenya",
+      "sizePv": 20.475,
+      "sizeBattery": 88.8,
+      "capex": 142561.0,
+      "n_customer_meters": 320,
+      "usd_per_kwp": 6962.686202686202,
+      "usd_per_kwh_storage": 1605.4166666666667,
+      "usd_per_connection": 445.503125
+    }
+  ],
+  "maji_moto": {
+    "households": 100,
+    "country": "KE",
+    "features": {
+      "bld_count": 326,
+      "grid_dist_km": 8.7353854480538
+    },
+    "frozen_p10_p50_p90_month18": [
+      1.5482793349024322,
+      3.7944030264364677,
+      9.299028930033165
+    ],
+    "frozen_p10_p50_p90_month24": [
+      1.5846616809529477,
+      3.8835660610717095,
+      9.517542786570262
+    ],
+    "drivers": [
+      {
+        "name": "Country baseline",
+        "multiplier": 1.0,
+        "reason": "3.7 kWh/customer/month \u2014 AMDA KE 2020 average (AMDA BAM 2022, Table 1)"
+      },
+      {
+        "name": "Mapped buildings",
+        "multiplier": 1.0255143314693156,
+        "reason": "326 buildings within 1 km vs a typical village of 300"
+      }
+    ],
+    "pv_yield_assumption": "4.5 kWh/kWp/day \u00d7 30.44 days \u00d7 0.85 performance = 116.4 kWh/kWp/month (NREL PVWatts-class, documented)",
+    "kenya_unit_costs_used": {
+      "usd_per_kwp_median": 8228.80569075988,
+      "usd_per_kwh_storage_median": 3852.7293202293204,
+      "usd_per_connection_median": 1040.8510101010102,
+      "kwh_storage_per_kwp_median": 2.0770963783368455
+    },
+    "size_p50": {
+      "kwh_cust_month": 3.8835660610717095,
+      "site_kwh_month": 388.35660610717093,
+      "kwp": 3.3354513420350838,
+      "battery_kwh": 6.928053902659843,
+      "cost_usd_from_kwp_and_storage": 54138.69738749773,
+      "cost_usd_from_per_connection": 104085.10101010102
+    },
+    "size_p90": {
+      "kwh_cust_month": 9.517542786570262,
+      "site_kwh_month": 951.7542786570262,
+      "kwp": 8.174265703512116,
+      "battery_kwh": 16.978737688328103,
+      "cost_usd_from_kwp_and_storage": 132678.9246511481,
+      "cost_usd_from_per_connection": 104085.10101010102
+    }
+  }
+}
