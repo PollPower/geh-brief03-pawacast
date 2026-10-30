@@ -1,0 +1,51 @@
+{
+  "model": "frozen day-one log-linear; commit in results/model_freeze.txt",
+  "ranked": [
+    {
+      "rank": 1,
+      "name": "Country / region baseline",
+      "plain": "Where the site is matters most. A typical Kenyan village starts at 3.7 kWh per customer per month (AMDA KE 2020 average (AMDA BAM 2022, Table 1)); a typical Nigerian village starts at 11.0 kWh (AMDA NG 2020 average (AMDA BAM 2022, Table 1)). That is a 3.0\u00d7 gap before any buildings are counted.",
+      "ke_kwh": 3.7,
+      "ng_kwh": 11.0,
+      "ratio_ng_over_ke": 2.972972972972973
+    },
+    {
+      "rank": 2,
+      "name": "Settlement size (mapped buildings)",
+      "plain": "Each extra mapped building within 1 km raises demand slowly (elasticity 0.30 on log buildings vs a village of 300). Doubling the building count multiplies demand by 1.23\u00d7. On TRAIN, that multiplier ran from 0.66\u00d7 to 1.47\u00d7.",
+      "beta_bld": 0.3031258114090143,
+      "ref_buildings": 300.0,
+      "double_buildings_multiplier": 1.2338147609503431,
+      "train_multiplier_min": 0.6589991039283722,
+      "train_multiplier_max": 1.470958268238152
+    },
+    {
+      "rank": 3,
+      "name": "Months since connection",
+      "plain": "Demand grows a little after power-on, then flattens. With the frozen slope, month 0 is 0.78\u00d7 the month-18 level, month 12 is 0.97\u00d7, and month 24 is 1.02\u00d7. That is about 15% per year over the first two years and only 6% per year after year 1.",
+      "slope": 0.08463413938171409,
+      "mult_month_0": 0.7794240270228386,
+      "mult_month_12": 0.9683925204761935,
+      "mult_month_24": 1.0234985672354842,
+      "annual_0_24": 0.14592639972808774,
+      "annual_12_24": 0.056904659623138176
+    }
+  ],
+  "exception": {
+    "finding": "Business-heavy settlements run about 3\u00d7 above the model. Kalobeyei Town used 14.6 kWh vs a 4.5 kWh forecast (3.3\u00d7); Kalobeyei Settlement used 19.7 vs 4.8 (4.1\u00d7). The frozen model has no business-mix term \u2014 mapped buildings and country do not see shops, clinics and markets in a refugee settlement.",
+    "sites": [
+      {
+        "site": "Kalobeyei Settlement",
+        "actual": 19.70073427220683,
+        "p50_logo": 4.821397327953848,
+        "ratio": 4.086104697902511
+      },
+      {
+        "site": "Kalobeyei Town",
+        "actual": 14.617932394971676,
+        "p50_logo": 4.45931431770796,
+        "ratio": 3.2780672887138254
+      }
+    ]
+  }
+}
