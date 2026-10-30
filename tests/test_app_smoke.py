@@ -41,7 +41,9 @@ def _fake_build_features(sites, name=None, refresh=False):
     )
 
 
-def _launch(monkeypatch, tooltip=None, click=None) -> AppTest:
+def _launch(monkeypatch, tooltip=None, click=None, live_pin: str | None = None) -> AppTest:
+    if live_pin is not None:
+        monkeypatch.setenv("PAWACAST_LIVE_PIN", live_pin)
     monkeypatch.setattr("streamlit_folium.st_folium", _fake_folium(tooltip, click))
     monkeypatch.setattr("pawacast.features.build_features", _fake_build_features)
     at = AppTest.from_file(str(APP), default_timeout=TIMEOUT)
@@ -95,11 +97,34 @@ def test_each_demo_site(monkeypatch, site_name):
 
 def test_dropped_pin_mocked_features(monkeypatch):
     pin = {"lat": -1.50, "lng": 36.08}
-    at = _launch(monkeypatch, click=pin)
+    at = _launch(monkeypatch, click=pin, live_pin="1")
     assert at.session_state.site_id == "click"
     assert at.session_state.name == "Dropped pin"
     assert at.session_state.feats["bld_count"] == 300
     _exercise(at)
+
+
+def test_dropped_pin_off_by_default(monkeypatch):
+    calls = []
+
+    def _guarded(sites, name=None, refresh=False):
+        calls.append(name)
+        if name == "demo_sites":
+            return real_build_features(sites, name=name, refresh=refresh)
+        raise AssertionError("Overture fetch must not run when PAWACAST_LIVE_PIN=0")
+
+    pin = {"lat": -1.50, "lng": 36.08}
+    monkeypatch.setenv("PAWACAST_LIVE_PIN", "0")
+    monkeypatch.setattr("streamlit_folium.st_folium", _fake_folium(click=pin))
+    monkeypatch.setattr("pawacast.features.build_features", _guarded)
+    at = AppTest.from_file(str(APP), default_timeout=TIMEOUT)
+    at.run(timeout=TIMEOUT)
+    _assert_ok(at)
+    assert at.session_state.site_id == "demo_maji_moto"
+    assert at.session_state.name != "Dropped pin"
+    blob = " ".join(getattr(m, "value", "") or "" for m in at.markdown)
+    assert "LIVE FORECASTS FOR NEW LOCATIONS ARE OFF IN THIS DEMO" in blob
+    assert all(name == "demo_sites" for name in calls)
 
 
 def test_nigeria_country(monkeypatch):

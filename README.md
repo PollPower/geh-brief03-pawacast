@@ -31,6 +31,8 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+Live dropped-pin forecasts (Overture fetch) are off unless `PAWACAST_LIVE_PIN=1`; default `0` for the hosted demo, with a 60-second timeout when on.
+
 ## Data credits
 
 - **Renewvia operational dataset** (24 mini-grids, Kenya and Nigeria): Selby, N. *High-Frequency, Multi-Domain Operational Dataset for Community Solar Mini-Grids in Kenya and Nigeria.* Zenodo, 2026. https://doi.org/10.5281/zenodo.22149101 — CC BY-SA 4.0.

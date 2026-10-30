@@ -5,7 +5,10 @@ Coordinates typed or clicked by users are shown on screen and not written to dis
 from __future__ import annotations
 
 import json
+import os
 import pathlib
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FuturesTimeout
 from datetime import date
 
 import altair as alt
@@ -33,8 +36,36 @@ from pawacast.targets.demo import DEMO_SITES
 from theme import ASH, FLARE, PLASMA, SUN, footer, inject
 
 FREEZE = "c3df2c8"
+PIN_TIMEOUT_S = 60
+PIN_OFF_MSG = (
+    "LIVE FORECASTS FOR NEW LOCATIONS ARE OFF IN THIS DEMO — fetching building data for a "
+    "new site takes several minutes. Try one of the three demo sites, or run PawaCast "
+    "locally (see README)."
+)
+PIN_TIMEOUT_MSG = (
+    "Timed out after 60 seconds fetching building data for this location. "
+    "Try one of the three demo sites, or run PawaCast locally (see README)."
+)
 # Page #0A0A0A; body #CCCCCC ≥4.5:1; ghost #888 on page ~5.6:1 (small labels);
 # Sun #FFD93D on page ~12:1; white on answer card ~19:1.
+
+
+def _live_pin_enabled() -> bool:
+    return os.environ.get("PAWACAST_LIVE_PIN", "0") == "1"
+
+
+def _pin_card(text: str) -> None:
+    st.markdown(f"<div class='pin-note'>{text}</div>", unsafe_allow_html=True)
+
+
+def _fetch_click_features(lat: float, lon: float) -> dict:
+    sites = pd.DataFrame({"site_id": ["click"], "lat": [lat], "lon": [lon]})
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        future = pool.submit(build_features, sites)
+        try:
+            return future.result(timeout=PIN_TIMEOUT_S).iloc[0].to_dict()
+        except FuturesTimeout as exc:
+            raise TimeoutError("Overture fetch timed out") from exc
 
 
 def _safe_int(value, default: int) -> int:
@@ -276,13 +307,24 @@ def main():
                 st.rerun()
         lc = (clicked or {}).get("last_clicked")
         if lc and abs(lc["lat"] - st.session_state.lat) > 1e-4:
-            with st.spinner("fetching buildings… 30–80 s"):
-                sites = pd.DataFrame(
-                    {"site_id": ["click"], "lat": [lc["lat"]], "lon": [lc["lng"]]}
-                )
-                f = build_features(sites).iloc[0].to_dict()
-            apply_site("click", "Dropped pin", lc["lat"], lc["lng"], st.session_state.country, st.session_state.customers, f)
-            st.rerun()
+            click_key = (round(float(lc["lat"]), 5), round(float(lc["lng"]), 5))
+            if not _live_pin_enabled():
+                _pin_card(PIN_OFF_MSG)
+            elif st.session_state.get("pin_timed_out") == click_key:
+                _pin_card(PIN_TIMEOUT_MSG)
+            else:
+                with st.spinner("fetching buildings… up to 60 s"):
+                    try:
+                        f = _fetch_click_features(lc["lat"], lc["lng"])
+                    except TimeoutError:
+                        st.session_state.pin_timed_out = click_key
+                        _pin_card(PIN_TIMEOUT_MSG)
+                    else:
+                        apply_site(
+                            "click", "Dropped pin", lc["lat"], lc["lng"],
+                            st.session_state.country, st.session_state.customers, f,
+                        )
+                        st.rerun()
 
         tr0 = 100 * real["summary"]["TRAIN-LOGO"]["0"]["median_ape"]
         tr6 = 100 * real["summary"]["TRAIN-LOGO"]["6"]["median_ape"]

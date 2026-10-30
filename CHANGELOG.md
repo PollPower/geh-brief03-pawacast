@@ -73,3 +73,4 @@ Times are ET. The line between pre-sprint and sprint work is the git tag `geh202
 ### Hours 32–48
 - Pin `requirements.txt` to throne-tested versions (pandas 3.0.3, duckdb 1.5.3, streamlit 1.66.1, …). Not relay’s duckdb 2.0.0 / pandas 3.1.0. DuckDB connections set `memory_limit='400MB'` and `threads=2` (`overture.py`, already in `renewvia.py`). No `geometry_always_xy` (1.5.3 plus existing `ST_FlipCoordinates`).
 - UI restyle to match pollpower.energy: dark page, grid overlay, frosted nav, JetBrains Mono labels, Sun-border answer card. Map uses Esri World Dark Gray (CartoDB dark_matter now requires an API key). Visual only.
+- Guard live dropped-pin Overture fetch: `PAWACAST_LIVE_PIN` defaults to `0` (notice card, no fetch); `1` keeps the fetch with a 60 s timeout.

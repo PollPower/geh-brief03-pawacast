@@ -277,6 +277,18 @@ a:hover {{ color: {FLARE} !important; }}
 }}
 .pp-nav-links a:hover {{ color: {SUN} !important; }}
 
+.pin-note {{
+  background: rgba(255,255,255,.03);
+  color: {BODY};
+  border: 1px solid {STEEL};
+  border-radius: 0;
+  padding: 0.75rem 0.9rem;
+  margin: 0.5rem 0 1rem 0;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}}
+
 .pp-foot {{
   margin-top: 2.4rem; padding-top: 1.1rem;
   border-top: 1px solid {STEEL};
