@@ -2,14 +2,14 @@
 # compactc  --version:         0.30.0
 # compactc  --language-version: 0.22.0
 # compactc  --runtime-version:  0.15.0
-# generated at:                 2026-10-30T17:54:00Z UTC
+# generated at:                 2026-10-30T18:35:37Z UTC
 #
 # <size-bytes>  <sha256>  <path>
-      1118  ed2957c77c8cb6f85ea568d00b649003fa2ee6060df5ee05741ce5d80fcd61eb  compiler/contract-info.json
-      1851  f04da466f2a069972fc12eff79eaa4ce9810bd9c66ed7dc17560864b10a10179  contract/index.d.ts
-     28049  fe21299cf8cf752e80cc191026777698f0759d0fd4a14773711d592394a61381  contract/index.js
-      1220  7ad0311585396ebfcc5b1c74dc507702412d2575e50ee3cbe3ccf84cf69a1216  contract/index.js.map
-   2138065  535bca459e0e69eab6bbbc4a468b525c6ead1be2e1898aea46831b593ec07318  keys/prove_published_sum_and_count.prover
-      1351  8a59b6281c62db5259ae9fec3e54d0ad8a77e6b5b53041c2743812ea44a2fae0  keys/prove_published_sum_and_count.verifier
-      9820  27df17f702fe6d8c472bcf2fa17ebc1bd50553032e921ee7e5b9cd10f4e5b0f5  zkir/prove_published_sum_and_count.bzkir
-    144119  9670d46ffdf866976f9793faad845ca4abfe90481c9f074e3819d778c4125b9a  zkir/prove_published_sum_and_count.zkir
+      1417  7799dda97f2e9413361f8a3792f22b322690b7717b66a21d55acfd2ae59690d6  compiler/contract-info.json
+      2081  3852df7b97f52c5b9cd8d042049afab57daa1cd4e0aa0ccdb04c1e1d7c91d0ba  contract/index.d.ts
+     20654  ba6fdcc21d2c8dd12f0049a30bf1ec9424ef826a7009aba779382541842d0ed0  contract/index.js
+      1683  09ba5fa6eab29a7b802b0c27848325d2f35db95613802d9db912f6d587228911  contract/index.js.map
+ 306399868  f5674dd96568468e03f470a7ba78e0e202dd6bc51e5d7a42a797a926ccc675d8  keys/prove_published_sum_and_count.prover
+      2119  91a41d1be6da0728722de920e27b2735f6ff37378a69d0fb3423f5d97f559151  keys/prove_published_sum_and_count.verifier
+     19063  769cf22963554e9f8fdccf0fc31531af8e370c628558b83394eefbcb8108f741  zkir/prove_published_sum_and_count.bzkir
+    182192  1c419d8e9045f6fca516368c2b326befe964fdf47950c16eb3ea1e46f620b207  zkir/prove_published_sum_and_count.zkir
