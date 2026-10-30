@@ -28,6 +28,7 @@ from pawacast.targets.renewvia import (
 )
 
 from .validate import (
+    EPSILON_PERIOD,
     MIN_CUSTOMERS,
     h3_res6,
     round_business_share,
@@ -38,7 +39,7 @@ from .validate import (
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 CACHE_DIR = ROOT / "data" / "targets" / "_share_cust_months"
 DEFAULT_EPSILON = 1.0
-KWH_CLIP = 50.0
+KWH_CLIP = 20.0
 TIER2_RENEWVIA_LABEL = (
     "Tier 2 demo built from Renewvia open data (CC BY-SA 4.0)"
 )
@@ -58,7 +59,7 @@ def laplace_scale_mean(n: int, clip: float = KWH_CLIP, epsilon: float = DEFAULT_
 
 
 def noise_table(
-    ns: tuple[int, ...] = (10, 25, 50, 100, 200, 500, 2000),
+    ns: tuple[int, ...] = (10, 25, 50, 200),
     typical_mean: float = 5.0,
     clip: float = KWH_CLIP,
     epsilon: float = DEFAULT_EPSILON,
@@ -127,7 +128,7 @@ def publish_from_customers(
     tier: int = 2,
     label: str = TIER2_RENEWVIA_LABEL,
 ) -> dict:
-    """k-anonymity, clip, Laplace noise, rounding. Raises if true n < 10."""
+    """k-anonymity, clip, Laplace noise, rounding. Raises if true n < 25."""
     kwh = np.asarray(kwh, dtype=float)
     is_business = np.asarray(is_business, dtype=bool)
     n_true = int(kwh.size)
@@ -168,6 +169,9 @@ def publish_from_customers(
         "tier": int(tier),
         "proof_ref": f"demo-no-proof:train:{site_id}:{month}",
         "epsilon": float(epsilon),
+        "epsilon_period": EPSILON_PERIOD,
+        "yearly_epsilon_budget": float(12.0 * epsilon),
+        "kwh_clip": float(clip),
         "label": label,
     }
     return validate_record(rec)
@@ -234,7 +238,7 @@ def records_from_job(job: SiteJob, refresh: bool = False) -> list[dict]:
 
 
 def build_train_records(refresh: bool = False) -> list[dict]:
-    """Published records for every TRAIN Renewvia site-month that passes k ≥ 10."""
+    """Published records for every TRAIN Renewvia site-month that passes k ≥ 25."""
     records: list[dict] = []
     for job in iter_build_jobs(final_eval=False):
         if job.role == "test":

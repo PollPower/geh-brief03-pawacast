@@ -6,86 +6,65 @@
   "n_customers_median": 165,
   "n_customers_max": 2770,
   "epsilon": 1.0,
-  "kwh_clip": 50.0,
+  "kwh_clip": 20.0,
   "example_record": {
     "h3_res6": "867a6eb57ffffff",
     "month": "2022-08",
     "months_since_power_on": 18,
     "n_customers": 65,
-    "mean_kwh_cust": 4.59,
-    "p10_kwh_cust": 0.04,
-    "p50_kwh_cust": 2.23,
-    "p90_kwh_cust": 14.07,
+    "mean_kwh_cust": 4.25,
+    "p10_kwh_cust": 0.02,
+    "p50_kwh_cust": 2.22,
+    "p90_kwh_cust": 13.77,
     "business_share": 0.1,
     "tier": 2,
     "proof_ref": "demo-no-proof:train:renewvia_olkiramatian:2022-08",
     "epsilon": 1.0,
+    "epsilon_period": "month",
+    "yearly_epsilon_budget": 12.0,
+    "kwh_clip": 20.0,
     "label": "Tier 2 demo built from Renewvia open data (CC BY-SA 4.0)"
   },
   "noise_vs_n": [
     {
       "n_customers": 10,
       "epsilon": 1.0,
-      "kwh_clip": 50.0,
-      "laplace_scale": 5.0,
-      "typical_abs_noise_kwh": 5.0,
-      "typical_mean_kwh": 5.0,
-      "typical_abs_noise_over_mean": 1.0
-    },
-    {
-      "n_customers": 25,
-      "epsilon": 1.0,
-      "kwh_clip": 50.0,
+      "kwh_clip": 20.0,
       "laplace_scale": 2.0,
       "typical_abs_noise_kwh": 2.0,
       "typical_mean_kwh": 5.0,
       "typical_abs_noise_over_mean": 0.4
     },
     {
-      "n_customers": 50,
+      "n_customers": 25,
       "epsilon": 1.0,
-      "kwh_clip": 50.0,
-      "laplace_scale": 1.0,
-      "typical_abs_noise_kwh": 1.0,
+      "kwh_clip": 20.0,
+      "laplace_scale": 0.8,
+      "typical_abs_noise_kwh": 0.8,
       "typical_mean_kwh": 5.0,
-      "typical_abs_noise_over_mean": 0.2
+      "typical_abs_noise_over_mean": 0.16
     },
     {
-      "n_customers": 100,
+      "n_customers": 50,
       "epsilon": 1.0,
-      "kwh_clip": 50.0,
-      "laplace_scale": 0.5,
-      "typical_abs_noise_kwh": 0.5,
+      "kwh_clip": 20.0,
+      "laplace_scale": 0.4,
+      "typical_abs_noise_kwh": 0.4,
       "typical_mean_kwh": 5.0,
-      "typical_abs_noise_over_mean": 0.1
+      "typical_abs_noise_over_mean": 0.08
     },
     {
       "n_customers": 200,
       "epsilon": 1.0,
-      "kwh_clip": 50.0,
-      "laplace_scale": 0.25,
-      "typical_abs_noise_kwh": 0.25,
-      "typical_mean_kwh": 5.0,
-      "typical_abs_noise_over_mean": 0.05
-    },
-    {
-      "n_customers": 500,
-      "epsilon": 1.0,
-      "kwh_clip": 50.0,
+      "kwh_clip": 20.0,
       "laplace_scale": 0.1,
       "typical_abs_noise_kwh": 0.1,
       "typical_mean_kwh": 5.0,
       "typical_abs_noise_over_mean": 0.02
-    },
-    {
-      "n_customers": 2000,
-      "epsilon": 1.0,
-      "kwh_clip": 50.0,
-      "laplace_scale": 0.025,
-      "typical_abs_noise_kwh": 0.025,
-      "typical_mean_kwh": 5.0,
-      "typical_abs_noise_over_mean": 0.005
     }
   ],
-  "note": "Laplace scale for the mean is (clip/n)/ε. At n=10 the typical |noise| is 5 kWh; at n=200 it is 0.25 kWh; at n=2000 (large settlement) 0.025 kWh. Small sites therefore publish a noisier mean. Compact proves exact sum and count; the published mean is that ratio after this noise."
+  "publish_threshold": 25,
+  "epsilon_period": "month",
+  "yearly_epsilon_budget": 12.0,
+  "note": "Clip 20 kWh/customer/month. Laplace scale for the mean is (clip/n)/ε. Per-release ε = 1.0 (one month). Basic composition: 12 monthly releases spend yearly_epsilon_budget = 12. At n=10 typical |noise| is 2.0 kWh (40% of a 5 kWh mean) so we do not publish below n=25, where typical |noise| is 0.8 kWh (16%). Compact proves exact sum and count; the published mean is that ratio after this noise."
 }

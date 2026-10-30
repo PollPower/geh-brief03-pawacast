@@ -60,11 +60,16 @@ def main() -> None:
         "kwh_clip": KWH_CLIP,
         "example_record": example,
         "noise_vs_n": table,
+        "publish_threshold": 25,
+        "epsilon_period": "month",
+        "yearly_epsilon_budget": 12.0,
         "note": (
-            "Laplace scale for the mean is (clip/n)/ε. At n=10 the typical |noise| "
-            "is 5 kWh; at n=200 it is 0.25 kWh; at n=2000 (large settlement) 0.025 kWh. "
-            "Small sites therefore publish a noisier mean. Compact proves exact sum and "
-            "count; the published mean is that ratio after this noise."
+            "Clip 20 kWh/customer/month. Laplace scale for the mean is (clip/n)/ε. "
+            "Per-release ε = 1.0 (one month). Basic composition: 12 monthly releases "
+            "spend yearly_epsilon_budget = 12. At n=10 typical |noise| is 2.0 kWh "
+            "(40% of a 5 kWh mean) so we do not publish below n=25, where typical "
+            "|noise| is 0.8 kWh (16%). Compact proves exact sum and count; the "
+            "published mean is that ratio after this noise."
         ),
     }
     OUT_DEMO.parent.mkdir(parents=True, exist_ok=True)
@@ -77,7 +82,7 @@ def main() -> None:
     print(f"wrote {OUT_DEMO}", flush=True)
     print("example record:", flush=True)
     print(json.dumps(example, indent=2), flush=True)
-    print("noise vs n (typical |noise| on the mean, clip=50, ε=1):", flush=True)
+    print("noise vs n (typical |noise| on the mean, clip=20, ε=1):", flush=True)
     for row in table:
         print(
             f"  n={row['n_customers']:4d}  scale={row['laplace_scale']:7.3f} kWh  "

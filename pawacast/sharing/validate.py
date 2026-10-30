@@ -1,8 +1,9 @@
 """Validate PawaCast shared meter-data records.
 
-k-anonymity: n_customers must be >= 10 (true count, and published count after
-rounding to the nearest 5). Exact coordinates, meter IDs and per-customer kWh
-are not in the schema and are rejected if present.
+k-anonymity: n_customers must be >= 25 (true count, and published count after
+rounding to the nearest 5). Raised from 10 because Laplace |noise| at n=10
+with a 20 kWh clip is 40% of a typical 5 kWh mean. Exact coordinates, meter
+IDs and per-customer kWh are not in the schema and are rejected if present.
 """
 from __future__ import annotations
 
@@ -16,10 +17,12 @@ import h3
 SCHEMA_PATH = pathlib.Path(__file__).resolve().parent / "schema.json"
 
 H3_RES = 6
-MIN_CUSTOMERS = 10
+MIN_CUSTOMERS = 25
 N_ROUND = 5
 SHARE_ROUND = 0.1
 KWH_MAX = 500.0
+EPSILON_PERIOD = "month"
+YEARLY_EPSILON_BUDGET = 12.0
 REQUIRED = (
     "h3_res6",
     "month",
@@ -33,6 +36,9 @@ REQUIRED = (
     "tier",
     "proof_ref",
     "epsilon",
+    "epsilon_period",
+    "yearly_epsilon_budget",
+    "kwh_clip",
 )
 FORBIDDEN = (
     "lat",
@@ -57,7 +63,7 @@ def load_schema() -> dict:
 
 
 def round_n_customers(n: int) -> int:
-    """Nearest 5, half-up. True n < 10 is still rejected before publish."""
+    """Nearest 5, half-up. True n < 25 is still rejected before publish."""
     if n < 0:
         raise RecordError("n_customers must be >= 0")
     return int(N_ROUND * math.floor(n / N_ROUND + 0.5))
@@ -163,6 +169,18 @@ def validate_record(record: Any) -> dict:
     eps = _num(record, "epsilon")
     if eps <= 0 or eps > 10:
         raise RecordError("epsilon must be in (0, 10]")
+    period = record["epsilon_period"]
+    if period != EPSILON_PERIOD:
+        raise RecordError("epsilon_period must be 'month'")
+    yearly = _num(record, "yearly_epsilon_budget")
+    expected_year = 12.0 * eps
+    if abs(yearly - expected_year) > 1e-6:
+        raise RecordError(
+            f"yearly_epsilon_budget {yearly} must equal 12 × epsilon ({expected_year})"
+        )
+    clip = _num(record, "kwh_clip")
+    if clip < 1 or clip > 100:
+        raise RecordError("kwh_clip out of range")
 
     if "label" in record and not isinstance(record["label"], str):
         raise RecordError("label must be a string")

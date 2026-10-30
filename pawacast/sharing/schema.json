@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://pollpower.energy/schemas/pawacast-shared-record.schema.json",
   "title": "PawaCast shared meter-data record",
-  "description": "Public site-month statistics from operator meter data. Exact coordinates, meter IDs, and per-customer kWh never appear. k-anonymity requires n_customers >= 10 (published n is rounded to the nearest 5). Laplace noise (epsilon) is added to the published kWh statistics.",
+  "description": "Public site-month statistics from operator meter data. Exact coordinates, meter IDs, and per-customer kWh never appear. k-anonymity requires true n_customers >= 25 (published n is rounded to the nearest 5). Laplace noise is added with per-release epsilon; monthly releases compose under basic composition to yearly_epsilon_budget.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -17,7 +17,10 @@
     "business_share",
     "tier",
     "proof_ref",
-    "epsilon"
+    "epsilon",
+    "epsilon_period",
+    "yearly_epsilon_budget",
+    "kwh_clip"
   ],
   "properties": {
     "h3_res6": {
@@ -38,8 +41,8 @@
     },
     "n_customers": {
       "type": "integer",
-      "description": "Active customer meters this month, rounded to the nearest 5. Records with true n < 10 are rejected and never published.",
-      "minimum": 10,
+      "description": "Active customer meters this month, rounded to the nearest 5. Records with true n < 25 are rejected (raised from 10 because Laplace |noise| at n=10 with clip 20 kWh is 40% of a typical 5 kWh mean).",
+      "minimum": 25,
       "multipleOf": 5
     },
     "mean_kwh_cust": {
@@ -80,15 +83,32 @@
     },
     "proof_ref": {
       "type": "string",
-      "description": "Reference to a Compact/Midnight proof that published sum and count match committed per-customer values and count >= 10. Demo records use a demo: prefix and are not on-chain.",
+      "description": "Reference to a Compact/Midnight proof that published sum and count match committed per-customer values and count >= 25. Demo records use a demo: prefix and are not on-chain.",
       "minLength": 1,
       "maxLength": 256
     },
     "epsilon": {
       "type": "number",
-      "description": "Differential-privacy budget for Laplace noise on the published kWh statistics (and business share).",
+      "description": "Per-release differential-privacy budget for Laplace noise on this month's published kWh statistics (and business share). One record = one monthly release.",
       "exclusiveMinimum": 0,
       "maximum": 10
+    },
+    "epsilon_period": {
+      "type": "string",
+      "description": "Cadence of one epsilon spend. Monthly releases compose under basic composition: 12 releases of epsilon spend yearly_epsilon_budget.",
+      "enum": ["month"]
+    },
+    "yearly_epsilon_budget": {
+      "type": "number",
+      "description": "Basic composition of 12 monthly releases: yearly_epsilon_budget = 12 × epsilon. Operators who publish every month spend the full yearly budget.",
+      "exclusiveMinimum": 0,
+      "maximum": 120
+    },
+    "kwh_clip": {
+      "type": "number",
+      "description": "Per-customer monthly kWh clip before statistics. Sensitivity of the mean is kwh_clip/n. Set to 20 (Renewvia TRAIN site-month means sit below this).",
+      "minimum": 1,
+      "maximum": 100
     },
     "label": {
       "type": "string",

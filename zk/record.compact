@@ -1,5 +1,5 @@
 // Compact circuit: published sum and count match committed per-customer values,
-// and count >= 10. Reveals only the published totals.
+// and count >= 25. Reveals only the published totals.
 //
 // Percentiles (P10/P50/P90) are NOT proven here — SHARING_DESIGN.md leaves that
 // as an open question (expensive in Compact). Laplace noise is applied outside
@@ -8,29 +8,24 @@
 // Values are millikWh (kWh * 1000, rounded) so we stay in integers.
 // Unused slots in the length-32 vector MUST be zero (padding).
 //
-// This file was not compiled on the sprint Windows machine: `compact` on PATH is
-// C:\Windows\system32\compact.exe (NTFS compression), not the Midnight Compact
-// compiler. Do not deploy to Midnight Preview without an explicit ask.
+// Compile on Linux with compactc 0.30.0 (PollPower contracts WI-13 pin).
+// See zk/COMPILE.md. Do not compile on Windows. Do not deploy without asking.
 //
-// Language version is a best-effort match to Compact 0.18. Adjust the pragma
-// if compactc rejects it.
+// k-anonymity floor is 25 (raised from 10: Laplace |noise| at n=10 with a
+// 20 kWh clip is 40% of a typical 5 kWh mean).
 
-pragma language_version 0.18.0;
+pragma language_version >= 0.16 && <= 0.22;
 
 import CompactStandardLibrary;
 
-// Pure proof circuit: no ledger state.
 export ledger {}
 
-const K_MIN: Uint<32> = 10;
+const K_MIN: Uint<32> = 25;
 const N_MAX: Uint<32> = 32;
 
-// Private: true customer count and the committed per-customer millikWh totals.
 witness privateN(): Uint<32>;
 witness privateValuesMilliKwh(): Vector<32, Uint<32>>;
 
-// Public: the numbers on the shared record (n_customers and sum = mean * n,
-// before Laplace noise). The proof reveals these and nothing else.
 export circuit prove_published_sum_and_count(
   publishedN: Uint<32>,
   publishedSumMilliKwh: Uint<64>

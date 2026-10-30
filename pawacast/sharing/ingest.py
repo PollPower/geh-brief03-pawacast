@@ -16,14 +16,19 @@ import h3
 import numpy as np
 
 from pawacast.model.growth import observed_multiplier
+from pawacast.model.loglinear import load_frozen
 from pawacast.model.prior import Estimate, Z90
 from pawacast.sharing.validate import H3_RES, validate_records
+from pawacast.targets.demo import DEMO_SITES
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 DEFAULT_RECORDS = ROOT / "results" / "sharing_records.json"
 TIER_WEIGHT = {1: 1.0, 2: 0.5}
 PRIOR_PSEUDO_SITES = 4.0
 MATURE_LO, MATURE_HI = 12, 24
+DEMO_RADIUS_KM = 80.0
+OLKI_LAT, OLKI_LON = -1.87170849, 36.150046876
+DEMO_MONTH = 18
 
 
 def load_records(path: pathlib.Path | None = None) -> list[dict]:
@@ -165,3 +170,83 @@ def growth_multiplier_path(obs: list[dict], slope: float) -> list[dict]:
                 }
             )
     return out
+
+
+def maji_moto_sharing_demo(records: list[dict] | None = None) -> dict:
+    """Single code path for the script and the app.
+
+    Month 18 (day-one window midpoint). Features come from demo_sites.parquet
+    filtered by site_id == demo_maji_moto (326 buildings). The earlier 5.74 → 5.08
+    figure used .iloc[0] of that parquet, which is Ewaso Ngiro (1,276 buildings),
+    not Maji Moto. Weighting and nearby records were the same; the prior was not.
+    """
+    from pawacast.features import build_features
+
+    model, frozen = load_frozen()
+    sigma = float(frozen["sigma"])
+    slope = float(frozen["growth_slope"])
+    demo = DEMO_SITES.copy()
+    feats = build_features(demo, name="demo_sites")
+    row = demo[demo.site_id == "demo_maji_moto"].iloc[0]
+    f = feats[feats.site_id == "demo_maji_moto"].iloc[0].to_dict()
+    est = model.estimate(f, row.country)
+    recs = records if records is not None else load_records()
+    nearby = nearby_records(
+        recs, float(row.lat), float(row.lon), radius_km=DEMO_RADIUS_KM
+    )
+    blended = blend_prior(est, nearby, sigma)
+    dist_km = haversine_km(float(row.lat), float(row.lon), OLKI_LAT, OLKI_LON)
+    k24 = float(observed_multiplier(24, slope))
+    obs = growth_observations(nearby)
+    path = growth_multiplier_path(obs, slope)
+    return {
+        "label": "DEMO: Maji Moto prior shifted by Olkiramatian-area shared records",
+        "month": DEMO_MONTH,
+        "month_label": "month 18 (day-one window midpoint)",
+        "note": (
+            f"Olkiramatian is {dist_km:.1f} km from Maji Moto, so this demo uses "
+            f"a {DEMO_RADIUS_KM:.0f} km radius (not a single H3 res-6 cell). Frozen "
+            f"β and σ are unchanged; only the P50 centre is blended in log space. "
+            f"Tier 2 weight is 0.5. Compact proof is demo-no-proof."
+        ),
+        "site": {
+            "name": row["name"],
+            "site_id": "demo_maji_moto",
+            "lat": float(row.lat),
+            "lon": float(row.lon),
+            "country": row.country,
+            "bld_count": f.get("bld_count"),
+        },
+        "olkiramatian_distance_km": round(dist_km, 2),
+        "radius_km": DEMO_RADIUS_KM,
+        "n_nearby_records": len(nearby),
+        "n_nearby_cells": len({r["h3_res6"] for r in nearby}),
+        "frozen_month18": {"p10": est.p10, "p50": est.p50, "p90": est.p90},
+        "blended_month18": {
+            "p10": blended["p10"],
+            "p50": blended["p50"],
+            "p90": blended["p90"],
+            "shift_ratio": blended["shift_ratio"],
+            "n_mature": blended["n_mature"],
+            "w_data": blended["w_data"],
+            "w_prior": blended.get("w_prior"),
+            "mean_of_nearby": blended.get("mean_of_nearby"),
+            "tiers": blended["tiers"],
+        },
+        "frozen_month24": {
+            "p10": est.p10 * k24,
+            "p50": est.p50 * k24,
+            "p90": est.p90 * k24,
+        },
+        "blended_month24": {
+            "p10": blended["p10"] * k24,
+            "p50": blended["p50"] * k24,
+            "p90": blended["p90"] * k24,
+        },
+        "growth_n_points": len(path),
+        "growth_frozen_slope": slope,
+        "headline": (
+            f"Month 18 P50 {est.p50:.2f} → {blended['p50']:.2f} kWh/customer "
+            f"({blended['shift_ratio']:.2f}×) after {len(nearby)} nearby Tier 2 records"
+        ),
+    }

@@ -1,4 +1,4 @@
-"""Shared-record schema: k-anonymity, rounding, H3 res-6, no PII fields."""
+"""Shared-record schema: k-anonymity n≥25, rounding, H3 res-6, no PII fields."""
 from __future__ import annotations
 
 import copy
@@ -28,6 +28,9 @@ def _ok(**kwargs):
         "tier": 2,
         "proof_ref": "demo:train:example:2022-06",
         "epsilon": 1.0,
+        "epsilon_period": "month",
+        "yearly_epsilon_budget": 12.0,
+        "kwh_clip": 20.0,
         "label": "Tier 2 demo built from Renewvia open data (CC BY-SA 4.0)",
     }
     rec.update(kwargs)
@@ -38,30 +41,32 @@ def test_valid_record_passes():
     out = validate_record(_ok())
     assert out["n_customers"] == 65
     assert out["tier"] == 2
+    assert out["yearly_epsilon_budget"] == 12.0
 
 
-def test_reject_n_below_10():
+def test_reject_n_below_25():
     with pytest.raises(RecordError, match="k-anonymity"):
         validate_record(_ok(n_customers=9))
     with pytest.raises(RecordError, match="k-anonymity"):
-        validate_record(_ok(n_customers=5))
+        validate_record(_ok(n_customers=10))
+    with pytest.raises(RecordError, match="k-anonymity"):
+        validate_record(_ok(n_customers=20))
     with pytest.raises(RecordError, match="k-anonymity"):
         validate_record(_ok(n_customers=0))
 
 
 def test_reject_n_not_multiple_of_5():
     with pytest.raises(RecordError, match="multiple of 5"):
-        validate_record(_ok(n_customers=11))
+        validate_record(_ok(n_customers=26))
     with pytest.raises(RecordError, match="multiple of 5"):
-        validate_record(_ok(n_customers=12))
+        validate_record(_ok(n_customers=27))
 
 
 def test_round_n_customers():
-    assert round_n_customers(10) == 10
-    assert round_n_customers(12) == 10
-    assert round_n_customers(13) == 15
+    assert round_n_customers(25) == 25
+    assert round_n_customers(27) == 25
+    assert round_n_customers(28) == 30
     assert round_n_customers(52) == 50
-    assert round_n_customers(9) == 10  # rounding only; validator still rejects true n < 10
 
 
 def test_round_business_share():
@@ -123,6 +128,11 @@ def test_reject_missing_field():
     del rec["proof_ref"]
     with pytest.raises(RecordError, match="missing"):
         validate_record(rec)
+
+
+def test_yearly_budget_must_be_12_times_epsilon():
+    with pytest.raises(RecordError, match="yearly_epsilon_budget"):
+        validate_record(_ok(epsilon=1.0, yearly_epsilon_budget=1.0))
 
 
 def test_copy_does_not_mutate():

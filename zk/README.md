@@ -2,7 +2,7 @@
 
 Prove that a published PawaCast record’s **sum** and **count** equal the sum and count of committed per-customer monthly kWh, and that **count ≥ 10**. The proof reveals those two numbers and nothing else (no meter IDs, no per-customer values, no exact coordinates).
 
-This is the sprint slice of [SHARING_DESIGN.md](../SHARING_DESIGN.md) §2 / §6.3. **Not deployed.** Midnight Preview deploy needs an explicit ask.
+This is the sprint slice of [SHARING_DESIGN.md](../SHARING_DESIGN.md) §2 / §6.3. **Not deployed.** Midnight Preview deploy needs an explicit ask. Compile on Linux with compactc 0.30.0 — see [COMPILE.md](COMPILE.md). Do not compile on Windows.
 
 ## What is proven
 

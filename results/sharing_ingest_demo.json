@@ -1,67 +1,49 @@
 {
   "label": "DEMO: Maji Moto prior shifted by Olkiramatian-area shared records",
+  "month": 18,
+  "month_label": "month 18 (day-one window midpoint)",
   "note": "Olkiramatian is 76.7 km from Maji Moto, so this demo uses a 80 km radius (not a single H3 res-6 cell). Frozen β and σ are unchanged; only the P50 centre is blended in log space. Tier 2 weight is 0.5. Compact proof is demo-no-proof.",
   "site": {
     "name": "Maji Moto, Narok (PollPower pilot)",
+    "site_id": "demo_maji_moto",
     "lat": -1.33866,
     "lon": 35.71253,
     "country": "KE",
-    "bld_count": 1276
+    "bld_count": 326
   },
   "olkiramatian_distance_km": 76.67,
   "radius_km": 80.0,
   "n_nearby_records": 50,
   "n_nearby_cells": 1,
   "frozen_month18": {
-    "p10": 2.3414867188364057,
-    "p50": 5.738334221759492,
-    "p90": 14.063064879129364
+    "p10": 1.5482793349024322,
+    "p50": 3.7944030264364677,
+    "p90": 9.299028930033165
   },
   "blended_month18": {
-    "p10": 2.0744563205055697,
-    "p50": 5.083916812228601,
-    "p90": 12.4592693990113,
-    "shift_ratio": 0.8859569024318293,
+    "p10": 1.6941598590853806,
+    "p50": 4.15191571163471,
+    "p90": 10.175193317250233,
+    "shift_ratio": 1.09422106263024,
     "n_mature": 13,
     "w_data": 8.7,
     "w_prior": 4.0,
-    "mean_of_nearby": 4.808618454705419,
+    "mean_of_nearby": 4.3274082721239315,
     "tiers": [
       2
     ]
   },
   "frozen_month24": {
-    "p10": 2.396508301929976,
-    "p50": 5.873176854289187,
-    "p90": 14.39352675472856
+    "p10": 1.5846616809529477,
+    "p50": 3.8835660610717095,
+    "p90": 9.517542786570262
   },
   "blended_month24": {
-    "p10": 2.1232030718300448,
-    "p50": 5.203381573260363,
-    "p90": 12.752044378688977
+    "p10": 1.7339701884417567,
+    "p50": 4.249479782140622,
+    "p90": 10.414295781549686
   },
   "growth_n_points": 50,
   "growth_frozen_slope": 0.08463413938171409,
-  "growth_vs_frozen": {
-    "6": {
-      "n": 1,
-      "median_observed_multiplier": 0.19389978213507625,
-      "frozen_multiplier": 0.9189628073909761
-    },
-    "12": {
-      "n": 1,
-      "median_observed_multiplier": 0.8801742919389979,
-      "frozen_multiplier": 0.9683925204761935
-    },
-    "18": {
-      "n": 1,
-      "median_observed_multiplier": 1.0,
-      "frozen_multiplier": 1.0
-    },
-    "24": {
-      "n": 1,
-      "median_observed_multiplier": 1.7799564270152506,
-      "frozen_multiplier": 1.0234985672354842
-    }
-  }
+  "headline": "Month 18 P50 3.79 → 4.15 kWh/customer (1.09×) after 50 nearby Tier 2 records"
 }

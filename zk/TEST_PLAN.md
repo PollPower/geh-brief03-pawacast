@@ -1,57 +1,39 @@
-# Compact circuit test plan (not run — compiler missing)
+# Compact circuit test plan (not run here — compile on Linux, see COMPILE.md)
 
-Install the Midnight Compact toolchain (`compactc`, matching `pragma language_version` in `record.compact`). Then:
+Compiler: compactc **0.30.0** on Linux. Do not compile on Windows. Do not deploy.
 
 ```
-compactc compile zk/record.compact
+compactc.bin zk/record.compact zk/build
 ```
-
-If the pragma is rejected, bump it to the installed language version. Do not deploy the compiled artifact.
 
 ## Cases
 
-### 1. Valid n = 10 (must accept)
+### 1. Valid n = 25 (must accept)
 
-Public: `publishedN = 10`, `publishedSumMilliKwh = 50000` (50 kWh total → 5 kWh mean).
+Public: `publishedN = 25`, `publishedSumMilliKwh = 125000`.
 
-Witness: `privateN = 10`, `privateValuesMilliKwh = [5000, 5000, …, 5000]` (10 entries) then 22 zeros.
+Witness: 25 × 5000 millikWh, then 7 zeros.
 
-Expect: circuit returns true.
+Fixture: `zk/fixtures/valid_n25.json`.
 
-Fixture: `zk/fixtures/valid_n10.json`.
+### 2. n = 24 (must reject)
 
-### 2. n = 9 (must reject)
+k-anonymity floor is 25.
 
-Public: `publishedN = 9`, sum any.
-
-Witness: 9 values + padding.
-
-Expect: assert `n >= K_MIN` fails.
-
-Fixture: `zk/fixtures/n9_should_fail.json`.
+Fixture: `zk/fixtures/n24_should_fail.json`.
 
 ### 3. Count mismatch (must reject)
 
-Public `publishedN = 10`, witness `privateN = 12`.
-
-Expect: `n == publishedN` fails.
+Public `publishedN = 25`, witness `privateN = 26`.
 
 ### 4. Sum mismatch (must reject)
 
-Public sum 50000, witness ten values that sum to 50001.
-
-Expect: `acc == publishedSumMilliKwh` fails.
+Public sum 125000, witness twenty-five values that sum to 125001.
 
 ### 5. Dirty padding (must reject)
 
-n = 10, first 10 slots sum correctly, slot 11 is 1 instead of 0.
-
-Expect: `v == 0` on padding fails.
+n = 25, first 25 slots sum correctly, slot 26 is 1 instead of 0.
 
 ### 6. n = 32 at the bound (must accept)
 
 32 values, no padding. Sum matches.
-
-## After compile
-
-Record compiler version, language version, and pass/fail of cases 1–6 in `results/` (do not fabricate). Still do not deploy.
