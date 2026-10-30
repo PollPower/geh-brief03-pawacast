@@ -46,6 +46,7 @@ Times are ET. The line between pre-sprint and sprint work is the git tag `geh202
 - Artifacts: `results/eval_final.json`, `results/eval_sites.csv`, `results/eval_ranges.png`. Model not changed after the score.
 - Declared the real-meter update protocol in EVAL_PLAN Deviations (OBS_SIGMA = 0.30, frozen P50/σ/growth, k = 0/1/3/6, R-test + TRAIN-LOGO). Not yet run.
 - REAL meter update (`results/meter_update_real.json`, `results/meter_update_real.png`), OBS_SIGMA = 0.30 unchanged. Median APE / width — R-test n=5: k=0 136%/6.01, k=1 96.2%/2.03, k=3 63.8%/1.54, k=6 56.4%/1.36. TRAIN-LOGO n=18: k=0 46.1%/6.01, k=1 31.7%/2.03, k=3 28.1%/1.54, k=6 28.8%/1.36. Frozen model not changed; headline R-test table not rescored.
+- Meter-update coverage and bias (no tuning): updated P10–P90 is overconfident. R-test coverage k=1/3/6 = 0%/20%/20%, bias +0.67/+0.49/+0.45. TRAIN-LOGO 56%/33%/28%, bias −0.12/−0.23/−0.17. Caption: “range after update is overconfident: 0% coverage (R-test) … 28% coverage (TRAIN-LOGO)”.
 - Optional v2 (country intercepts shrunk toward AMDA, λ=2): TRAIN LOGO median APE 50.2% (worse than frozen 46.1%), coverage 83%, width 6.23. R-test **post-hoc, test already seen**: 79.6% APE, 80% coverage. Does not replace the headline. `results/v2_posthoc.json`. Logged under EVAL_PLAN Deviations.
 
 ### Hours 16–24

@@ -36,12 +36,12 @@ def _py(x):
         return {k: _py(v) for k, v in x.items()}
     if isinstance(x, (list, tuple)):
         return [_py(v) for v in x]
+    if isinstance(x, (np.bool_, bool)):
+        return bool(x)
     if isinstance(x, (np.floating, float)):
         return None if not math.isfinite(x) else float(x)
     if isinstance(x, (np.integer, int)):
         return int(x)
-    if isinstance(x, (np.bool_, bool)):
-        return bool(x)
     return x
 
 
@@ -109,15 +109,48 @@ def summarise(rows: pd.DataFrame) -> dict:
     for grp, g in rows.groupby("group"):
         out[grp] = {}
         for k, gg in g.groupby("k"):
+            n = int(len(gg))
+            n_inside = int(gg.inside.sum())
+            coverage = float(gg.inside.mean())
             out[grp][str(int(k))] = {
                 "median_ape": float(gg.ape.median()),
                 "range_width": float(gg.width.median()),
-                "n": int(len(gg)),
+                "coverage_p10_p90": coverage,
+                "n_inside": n_inside,
+                "bias": float(gg.bias.median()),
+                "n": n,
             }
     return out
 
 
-def plot_update(summary: dict, path: pathlib.Path) -> None:
+def overconfidence_notes(summary: dict, threshold: float = 0.80) -> dict:
+    """Plain-language flags. No parameter is changed."""
+    notes = []
+    by_group = {}
+    for grp in ("R-test", "TRAIN-LOGO"):
+        parts = []
+        low = False
+        for k in (1, 3, 6):
+            cov = summary[grp][str(k)]["coverage_p10_p90"]
+            n_in = summary[grp][str(k)]["n_inside"]
+            n = summary[grp][str(k)]["n"]
+            parts.append(f"k={k} {100 * cov:.0f}% ({n_in}/{n})")
+            if cov < threshold:
+                low = True
+        line = f"{grp}: " + ", ".join(parts)
+        if low:
+            # Worst of k=1,3,6 for the caption's X%.
+            worst = min(summary[grp][str(k)]["coverage_p10_p90"] for k in (1, 3, 6))
+            line = (
+                f"range after update is overconfident: {100 * worst:.0f}% coverage "
+                f"({grp}; " + ", ".join(parts) + ")"
+            )
+        by_group[grp] = {"overconfident": low, "text": line}
+        notes.append(line)
+    return {"threshold": threshold, "groups": by_group, "lines": notes}
+
+
+def plot_update(summary: dict, notes: dict, path: pathlib.Path) -> None:
     fig, ax = plt.subplots(figsize=(10.0, 5.6), dpi=150)
     fig.patch.set_facecolor("white")
     ax.set_facecolor("white")
@@ -144,14 +177,26 @@ def plot_update(summary: dict, path: pathlib.Path) -> None:
     h2, l2 = ax2.get_legend_handles_labels()
     ax.legend(h1 + h2, l1 + l2, frameon=False, loc="upper right")
     ax.text(
-        0.02, 0.04,
-        "prior σ = 0.699  ·  OBS_SIGMA = 0.30 (pre-sprint)  ·  frozen growth",
+        0.02, 0.06,
+        "prior σ = 0.699  ·  OBS_SIGMA = 0.30 (pre-sprint)  ·  frozen growth  ·  no tuning",
         transform=ax.transAxes, fontsize=8, color="#666666",
     )
     for sp in ("top",):
         ax.spines[sp].set_visible(False)
         ax2.spines[sp].set_visible(False)
-    fig.tight_layout()
+    caption_lines = []
+    for grp in ("R-test", "TRAIN-LOGO"):
+        if not notes["groups"][grp]["overconfident"]:
+            continue
+        covs = [summary[grp][str(k)]["coverage_p10_p90"] for k in (1, 3, 6)]
+        caption_lines.append(
+            f"range after update is overconfident: {100 * min(covs):.0f}% coverage "
+            f"({grp}; k=1/3/6 = " + "/".join(f"{100 * c:.0f}%" for c in covs) + ")"
+        )
+    caption = "\n".join(caption_lines)
+    fig.tight_layout(rect=(0, 0.14 if caption else 0.02, 1, 1))
+    if caption:
+        fig.text(0.5, 0.015, caption, ha="center", va="bottom", fontsize=8.5, color=ASH)
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, dpi=150)
     plt.close(fig)
@@ -189,12 +234,15 @@ def run() -> dict:
                     "sigma": float(post["sigma"]),
                     "width": float(post["p90"] / post["p10"]),
                     "ape": float(ape(post["p50"], p.actual)),
+                    "inside": bool(p.actual >= post["p10"] and p.actual <= post["p90"]),
+                    "bias": float(math.log(post["p50"] / p.actual)),
                     "reading_months": [m for m, _ in readings],
                 }
             )
     df = pd.DataFrame(rows)
     summary = summarise(df)
-    plot_update(summary, OUT / "meter_update_real.png")
+    notes = overconfidence_notes(summary)
+    plot_update(summary, notes, OUT / "meter_update_real.png")
     payload = {
         "label": "REAL meter data (Renewvia)",
         "obs_sigma": OBS_SIGMA,
@@ -206,7 +254,17 @@ def run() -> dict:
             "Day-one P50/σ frozen. TRAIN priors are leave-one-group-out. "
             "Readings are the first k site-months in the aggregate, mapped to month 18 "
             "with the frozen log1p growth slope, then updated with OBS_SIGMA=0.30. "
-            "Headline R-test table is unchanged."
+            "Headline R-test table is unchanged. No tuning."
+        ),
+        "overconfidence": notes,
+        "caption": (
+            "  ".join(
+                f"range after update is overconfident: "
+                f"{100 * min(summary[g][str(k)]['coverage_p10_p90'] for k in (1, 3, 6)):.0f}% coverage ({g})"
+                for g in ("R-test", "TRAIN-LOGO")
+                if notes["groups"][g]["overconfident"]
+            )
+            or None
         ),
         "summary": summary,
         "sites": df.drop(columns=["reading_months"]).to_dict(orient="records"),
@@ -218,12 +276,18 @@ def run() -> dict:
     (OUT / "meter_update_real.json").write_text(
         json.dumps(_py(payload), indent=2), encoding="utf-8"
     )
-    print("REAL meter data (Renewvia)  OBS_SIGMA=0.30  sigma_prior=%.3f" % sigma)
-    print(f"{'group':<12} {'k':>3} {'medAPE':>8} {'width':>8} {'n':>4}")
+    print("REAL meter data (Renewvia)  OBS_SIGMA=0.30  sigma_prior=%.3f  no tuning" % sigma)
+    print(f"{'group':<12} {'k':>3} {'medAPE':>8} {'cover':>8} {'width':>8} {'bias':>8} {'n':>4}")
     for grp in ("R-test", "TRAIN-LOGO"):
         for k in KS:
             s = summary[grp][str(k)]
-            print(f"{grp:<12} {k:3d} {100 * s['median_ape']:7.1f}% {s['range_width']:8.2f} {s['n']:4d}")
+            print(
+                f"{grp:<12} {k:3d} {100 * s['median_ape']:7.1f}% "
+                f"{100 * s['coverage_p10_p90']:6.0f}% "
+                f"{s['range_width']:8.2f} {s['bias']:8.2f} {s['n']:4d}"
+            )
+    for line in notes["lines"]:
+        print(line)
     print(f"\nwrote {OUT / 'meter_update_real.json'}")
     print(f"wrote {OUT / 'meter_update_real.png'}")
     return payload
