@@ -49,7 +49,23 @@ def run(refresh=False) -> dict:
     return {"table": res, "summary": summary}
 
 if __name__ == "__main__":
-    pd.set_option("display.width", 200)
-    r = run()
-    print(r["table"].round(2).to_string(index=False))
-    print(json.dumps(r["summary"], indent=2))
+    import argparse
+
+    p = argparse.ArgumentParser()
+    p.add_argument("--final", action="store_true",
+                   help="one-time held-out score; requires PAWACAST_FINAL_EVAL=1")
+    p.add_argument("--refresh", action="store_true")
+    args = p.parse_args()
+    pd.set_option("display.width", 220)
+    pd.set_option("display.max_columns", 30)
+    if args.final:
+        from .eval_final import run_final
+        from .targets.renewvia import final_eval_enabled
+
+        if not final_eval_enabled():
+            raise SystemExit("set PAWACAST_FINAL_EVAL=1 for the one-time held-out score")
+        run_final(refresh=args.refresh)
+    else:
+        r = run(refresh=args.refresh)
+        print(r["table"].round(2).to_string(index=False))
+        print(json.dumps(r["summary"], indent=2))

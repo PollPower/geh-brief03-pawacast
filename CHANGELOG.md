@@ -38,6 +38,12 @@ Times are ET. The line between pre-sprint and sprint work is the git tag `geh202
 
 ### Hours 12–16
 - Model frozen at `c3df2c8` (`results/model_freeze.txt`, `results/model_frozen.json`). P50 formula, β_bld, OOF σ and growth slope must not change after this.
+- One-time held-out score (`PAWACAST_FINAL_EVAL=1`): built `renewvia_site_months_test.parquet` (5 sites, 198 months) with the frozen aggregator. Scored frozen coefficients only — no refit.
+- **Headline R-test** (Balep, Bendeghe-Afi, Opu, Ozuzu, Kapelbok): PawaCast median APE 136%, coverage 60% (3/5), P90/P10 6.01, bias +0.86. AMDA 117% / 60% / 5.29 / +0.78; v0 195% / 40%; brief 20 kWh 295% / 20%. Ozuzu 14.6 vs P50 14.8; Kapelbok 1.00 vs 4.41 (outside); Bendeghe-Afi 4.07 vs P10 5.18 (just outside). Nigerian test sites sit well below the AMDA NG 11 kWh prior.
+- Set B (Olenarau KE month 20; Tum and Omorate ET month 10, growth-aligned): PawaCast median APE 66.5%, coverage 33% (1/3), bias −1.09. AMDA 77% / 33%. Olenarau inside (3.74 vs 2.01); Tum 43.3 and Omorate 73.2 sit far above the EAST_SOUTH 10 kWh prior even after the building multiplier.
+- Set A (seen, continuity): PawaCast median APE 37.4%, coverage 83% (5/6), bias +0.25. AMDA 47% / 83%; v0 60% / 83%.
+- Country check (6 unlocated published sites): PawaCast without coordinates equals AMDA; median APE vs those published figures 61%.
+- Artifacts: `results/eval_final.json`, `results/eval_sites.csv`, `results/eval_ranges.png`. Model not changed after the score.
 
 ### Hours 16–24
 ### Hours 24–32 (feature freeze at 32)

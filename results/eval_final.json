@@ -1,0 +1,241 @@
+{
+  "freeze_commit": "c3df2c84b019cea36c6fb8d7ef4b671e0dffc30d",
+  "headline_set": "R-test",
+  "headline": {
+    "median_ape": 1.359600929417323,
+    "coverage_p10_p90": 0.6,
+    "range_width": 6.006040848319635,
+    "bias": 0.8584925070343657,
+    "n": 5
+  },
+  "frozen": {
+    "formula": "log(kWh) = log(AMDA country) + beta_bld * log(bld_count / 300)",
+    "beta_bld": 0.3031258114090143,
+    "sigma": 0.6994248481546623,
+    "interval_method": "oof_sigma",
+    "growth_slope": 0.08463413938171409,
+    "ref_month": 18,
+    "target": "gap-filled kWh/customer/month, median of site-months with months_since_power_on in [12, 24]"
+  },
+  "metrics": {
+    "R-test": {
+      "pawacast": {
+        "median_ape": 1.359600929417323,
+        "coverage_p10_p90": 0.6,
+        "range_width": 6.006040848319635,
+        "bias": 0.8584925070343657,
+        "n": 5
+      },
+      "amda": {
+        "median_ape": 1.1724813186696044,
+        "coverage_p10_p90": 0.6,
+        "range_width": 5.2913848605851825,
+        "bias": 0.7758699791191056,
+        "n": 5
+      },
+      "v0": {
+        "median_ape": 1.9499506149384151,
+        "coverage_p10_p90": 0.4,
+        "range_width": 5.2913848605851825,
+        "bias": 1.081788429512759,
+        "n": 5
+      },
+      "brief20": {
+        "median_ape": 2.949966033944735,
+        "coverage_p10_p90": 0.2,
+        "range_width": 5.2913848605851825,
+        "bias": 1.373706979874726,
+        "n": 5
+      }
+    },
+    "B": {
+      "pawacast": {
+        "median_ape": 0.6645178238207494,
+        "coverage_p10_p90": 0.3333333333333333,
+        "range_width": 6.006040848319636,
+        "bias": -1.0921864501239669,
+        "n": 3
+      },
+      "amda": {
+        "median_ape": 0.7690128120893561,
+        "coverage_p10_p90": 0.3333333333333333,
+        "range_width": 5.2913848605851825,
+        "bias": -1.4653930335887915,
+        "n": 3
+      },
+      "v0": {
+        "median_ape": 0.7703591857737114,
+        "coverage_p10_p90": 0.3333333333333333,
+        "range_width": 5.2913848605851825,
+        "bias": -1.471238868024954,
+        "n": 3
+      },
+      "brief20": {
+        "median_ape": 0.7267001042611341,
+        "coverage_p10_p90": 0.3333333333333333,
+        "range_width": 5.2913848605851825,
+        "bias": -0.7722458530288463,
+        "n": 3
+      }
+    },
+    "A": {
+      "pawacast": {
+        "median_ape": 0.3739490957836271,
+        "coverage_p10_p90": 0.8333333333333334,
+        "range_width": 6.0060408483196355,
+        "bias": 0.25151917476735014,
+        "n": 6
+      },
+      "amda": {
+        "median_ape": 0.47368072402505756,
+        "coverage_p10_p90": 0.8333333333333334,
+        "range_width": 5.2913848605851825,
+        "bias": 0.30780375236959223,
+        "n": 6
+      },
+      "v0": {
+        "median_ape": 0.5971203868745245,
+        "coverage_p10_p90": 0.8333333333333334,
+        "range_width": 5.291384860585182,
+        "bias": 0.3604794235374442,
+        "n": 6
+      },
+      "brief20": {
+        "median_ape": 6.378028191254938,
+        "coverage_p10_p90": 0.0,
+        "range_width": 5.2913848605851825,
+        "bias": 1.9952032062734042,
+        "n": 6
+      }
+    },
+    "B_geo_high": {
+      "pawacast": {
+        "median_ape": 0.7227445706673423,
+        "coverage_p10_p90": 0.0,
+        "range_width": 6.0060408483196355,
+        "bias": -1.3053695188047274,
+        "n": 2
+      },
+      "amda": {
+        "median_ape": 0.8161814321099616,
+        "coverage_p10_p90": 0.0,
+        "range_width": 5.2913848605851825,
+        "bias": -1.7278628908433105,
+        "n": 2
+      },
+      "v0": {
+        "median_ape": 0.8112518356151748,
+        "coverage_p10_p90": 0.0,
+        "range_width": 5.2913848605851825,
+        "bias": -1.6913793015868932,
+        "n": 2
+      },
+      "brief20": {
+        "median_ape": 0.6323628642199232,
+        "coverage_p10_p90": 0.5,
+        "range_width": 5.2913848605851825,
+        "bias": -1.0347157102833653,
+        "n": 2
+      }
+    }
+  },
+  "country_check": {
+    "note": "Unlocated published sites have no coordinates, so PawaCast equals the AMDA country (or regional) baseline. Not a site-level score.",
+    "median_ape_amda": 0.6136507110645717,
+    "n": 6,
+    "sites": [
+      {
+        "site": "Scott & Coley 2021, Site A (island)",
+        "country": "TZ",
+        "customers": 358.0,
+        "actual": 3.17,
+        "p50_pawacast_no_location": 8.0,
+        "p50_amda": 8.0,
+        "ape_amda": 1.523659305993691,
+        "amda_source": "AMDA TZ 2020 average (AMDA BAM 2022, Table 1)",
+        "source": "Energies 14:4207, Table 3; 2019"
+      },
+      {
+        "site": "Scott & Coley 2021, Site D (village)",
+        "country": "TZ",
+        "customers": 135.0,
+        "actual": 2.71,
+        "p50_pawacast_no_location": 8.0,
+        "p50_amda": 8.0,
+        "ape_amda": 1.952029520295203,
+        "amda_source": "AMDA TZ 2020 average (AMDA BAM 2022, Table 1)",
+        "source": "Energies 14:4207, Table 3; 2019"
+      },
+      {
+        "site": "Hartvigsson et al. 2021, SW highlands hydro",
+        "country": "TZ",
+        "customers": 1544.0,
+        "actual": 33.9,
+        "p50_pawacast_no_location": 8.0,
+        "p50_amda": 8.0,
+        "ape_amda": 0.7640117994100295,
+        "amda_source": "AMDA TZ 2020 average (AMDA BAM 2022, Table 1)",
+        "source": "ESD 60:82-89; 3.5 days of logging only"
+      },
+      {
+        "site": "Mthembanji, Dedza",
+        "country": "MW",
+        "customers": 60.0,
+        "actual": 8.85,
+        "p50_pawacast_no_location": 10.0,
+        "p50_amda": 10.0,
+        "ape_amda": 0.1299435028248588,
+        "amda_source": "AMDA East/South 2023 average",
+        "source": "Strathclyde 2022 technical report; 2021 sales / 60 customers"
+      },
+      {
+        "site": "Sierra Leone, ~40 sites (average)",
+        "country": "SL",
+        "customers": NaN,
+        "actual": 5.0,
+        "p50_pawacast_no_location": 6.4,
+        "p50_amda": 6.4,
+        "ape_amda": 0.2800000000000001,
+        "amda_source": "AMDA SL 2020 average (AMDA BAM 2022, Table 1)",
+        "source": "CrossBoundary night-lights study; '4-6 kWh per month per connection'"
+      },
+      {
+        "site": "Enkoireroi",
+        "country": "KE",
+        "customers": 27.0,
+        "actual": 2.5285493333333333,
+        "p50_pawacast_no_location": 3.7,
+        "p50_amda": 3.7,
+        "ape_amda": 0.46328962271911384,
+        "amda_source": "AMDA KE 2020 average (AMDA BAM 2022, Table 1)",
+        "source": "Blodgett et al. 2017, ESD 41:88-105"
+      }
+    ]
+  },
+  "n_sites": {
+    "R-test": 5,
+    "B": 3,
+    "A": 6
+  },
+  "r_test_sites": [
+    "Balep",
+    "Bendeghe-Afi",
+    "Kapelbok",
+    "Opu",
+    "Ozuzu"
+  ],
+  "set_b_sites": [
+    "Olenarau",
+    "Omorate",
+    "Tum"
+  ],
+  "set_a_sites": [
+    "Barsaloi",
+    "Entesopia",
+    "Marti",
+    "Merile",
+    "Namba Koloo",
+    "Opiroi"
+  ],
+  "note": "Scored once with frozen coefficients. R-test is the headline. Set A was seen before the sprint (continuity). PawaCast P50 is grown from month 18 with the frozen log1p slope; v0 is grown from month 24 with the pre-sprint 18% rate; AMDA and 20 kWh are unscaled country/brief figures (same as TRAIN CV)."
+}

@@ -25,9 +25,12 @@ import pandas as pd
 
 from .prior import Estimate, country_baseline, Z90
 from ..targets.public import REGION
-from ..targets.renewvia import TEST_SITES, load_site_months
+from ..targets.renewvia import TEST_SITES, final_eval_enabled, load_site_months
 
-ISO = {"Kenya": "KE", "Nigeria": "NG", "KE": "KE", "NG": "NG"}
+ISO = {
+    "Kenya": "KE", "Nigeria": "NG", "Ethiopia": "ET",
+    "KE": "KE", "NG": "NG", "ET": "ET",
+}
 WINDOW_LO, WINDOW_HI = 12, 24
 REF_MONTH = 18
 REF_BLD = 300.0          # typical rural village, buildings within 1 km (documented, not fitted)
@@ -81,12 +84,15 @@ def apply_imputation(sm: pd.DataFrame, check: pd.DataFrame | None = None) -> tup
     return out, []
 
 
-def site_level_targets(sm: pd.DataFrame) -> pd.DataFrame:
-    """One row per TRAIN site: median kWh in months 12–24, else earliest 12 months."""
+def site_level_targets(sm: pd.DataFrame, *, allow_test: bool = False) -> pd.DataFrame:
+    """One row per site: median kWh in months 12–24, else earliest 12 months.
+
+    Test sites are refused unless allow_test=True and PAWACAST_FINAL_EVAL=1.
+    """
     if sm.empty:
         raise ValueError("no site-months")
     bad = set(sm.projectName) & set(TEST_SITES)
-    if bad:
+    if bad and not (allow_test and final_eval_enabled()):
         raise RuntimeError(f"test sites leaked into site-level targets: {bad}")
     rows = []
     for site, g in sm.groupby("projectName"):
@@ -237,3 +243,21 @@ def fit(sites: pd.DataFrame, lam: float = RIDGE_LAMBDA, sigma: float | None = No
         beta=beta, sigma=float(sigma), lam=lam, n_sites=len(sites),
         interval_method=interval_method,
     )
+
+
+def load_frozen(path=None) -> tuple[LogLinearFit, dict]:
+    """Load coefficients from results/model_frozen.json. Does not refit."""
+    import json
+    import pathlib
+
+    p = pathlib.Path(path) if path else (
+        pathlib.Path(__file__).resolve().parents[2] / "results" / "model_frozen.json"
+    )
+    d = json.loads(p.read_text(encoding="utf-8"))
+    model = LogLinearFit(
+        beta=np.array([float(d["beta_bld"])], dtype=float),
+        sigma=float(d["sigma"]),
+        lam=float(d["ridge_lambda"]),
+        interval_method=str(d["interval_method"]),
+    )
+    return model, d
