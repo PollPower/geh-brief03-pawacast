@@ -16,3 +16,4 @@ streamlit>=1.36
 streamlit-folium>=0.22
 folium>=0.17
 altair>=5.0
+h3>=4.1

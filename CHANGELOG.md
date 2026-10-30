@@ -57,4 +57,5 @@ Times are ET. The line between pre-sprint and sprint work is the git tag `geh202
 - Streamlit app `app/streamlit_app.py`: map + demo sites, Maji Moto answer card, drivers, growth, meters-correct with **update v2** (TRAIN-LOGO ~80% coverage; simulated readings labelled SIMULATED), HTML lender report, How tested from `results/eval_final.json`. No Playwright PDF (HTML download instead). Day-one model frozen.
 
 ### Hours 24–32 (feature freeze at 32)
+- Shared-record JSON Schema (`pawacast/sharing/schema.json`) and validator (`pawacast/sharing/validate.py`): H3 res-6 cell, month, months since power-on, n_customers (nearest 5, reject true n < 10), mean/P10/P50/P90 kWh per customer, business share (nearest 10%), tier 1/2, proof reference, ε. Coordinates, meter IDs and per-customer kWh are forbidden fields. Tests in `tests/test_sharing_schema.py`. `h3` added to requirements.
 ### Hours 32–48

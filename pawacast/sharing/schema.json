@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pollpower.energy/schemas/pawacast-shared-record.schema.json",
+  "title": "PawaCast shared meter-data record",
+  "description": "Public site-month statistics from operator meter data. Exact coordinates, meter IDs, and per-customer kWh never appear. k-anonymity requires n_customers >= 10 (published n is rounded to the nearest 5). Laplace noise (epsilon) is added to the published kWh statistics.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "h3_res6",
+    "month",
+    "months_since_power_on",
+    "n_customers",
+    "mean_kwh_cust",
+    "p10_kwh_cust",
+    "p50_kwh_cust",
+    "p90_kwh_cust",
+    "business_share",
+    "tier",
+    "proof_ref",
+    "epsilon"
+  ],
+  "properties": {
+    "h3_res6": {
+      "type": "string",
+      "description": "H3 cell at resolution 6 (~36 km²). Exact lat/lon never published.",
+      "pattern": "^[0-9a-f]{15}$"
+    },
+    "month": {
+      "type": "string",
+      "description": "Calendar month of the aggregated readings (UTC month start, YYYY-MM).",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
+    },
+    "months_since_power_on": {
+      "type": "integer",
+      "description": "Whole months from the site power-on date to this month.",
+      "minimum": 0,
+      "maximum": 240
+    },
+    "n_customers": {
+      "type": "integer",
+      "description": "Active customer meters this month, rounded to the nearest 5. Records with true n < 10 are rejected and never published.",
+      "minimum": 10,
+      "multipleOf": 5
+    },
+    "mean_kwh_cust": {
+      "type": "number",
+      "description": "Mean kWh per active customer meter per month, after Laplace noise.",
+      "minimum": 0,
+      "maximum": 500
+    },
+    "p10_kwh_cust": {
+      "type": "number",
+      "description": "10th percentile of per-customer monthly kWh, after Laplace noise.",
+      "minimum": 0,
+      "maximum": 500
+    },
+    "p50_kwh_cust": {
+      "type": "number",
+      "description": "Median of per-customer monthly kWh, after Laplace noise.",
+      "minimum": 0,
+      "maximum": 500
+    },
+    "p90_kwh_cust": {
+      "type": "number",
+      "description": "90th percentile of per-customer monthly kWh, after Laplace noise.",
+      "minimum": 0,
+      "maximum": 500
+    },
+    "business_share": {
+      "type": "number",
+      "description": "Share of active customers that are businesses, rounded to the nearest 10%.",
+      "minimum": 0,
+      "maximum": 1,
+      "multipleOf": 0.1
+    },
+    "tier": {
+      "type": "integer",
+      "description": "1 = PollPower-metered (signed on-chip). 2 = other operator meters.",
+      "enum": [1, 2]
+    },
+    "proof_ref": {
+      "type": "string",
+      "description": "Reference to a Compact/Midnight proof that published sum and count match committed per-customer values and count >= 10. Demo records use a demo: prefix and are not on-chain.",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "epsilon": {
+      "type": "number",
+      "description": "Differential-privacy budget for Laplace noise on the published kWh statistics (and business share).",
+      "exclusiveMinimum": 0,
+      "maximum": 10
+    },
+    "label": {
+      "type": "string",
+      "description": "Human-readable provenance. Demo TRAIN records use the Renewvia CC BY-SA 4.0 label.",
+      "maxLength": 256
+    }
+  }
+}
