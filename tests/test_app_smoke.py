@@ -127,6 +127,21 @@ def test_dropped_pin_off_by_default(monkeypatch):
     assert all(name == "demo_sites" for name in calls)
 
 
+def test_readme_view_renders(monkeypatch):
+    monkeypatch.setattr("streamlit_folium.st_folium", _fake_folium())
+    monkeypatch.setattr("pawacast.features.build_features", _fake_build_features)
+    at = AppTest.from_file(str(APP), default_timeout=TIMEOUT)
+    at.query_params["view"] = "readme"
+    at.run(timeout=TIMEOUT)
+    _assert_ok(at)
+    blob = " ".join(getattr(m, "value", "") or "" for m in at.markdown)
+    assert "HOW PAWACAST" in blob
+    assert "WORKS" in blob
+    assert "BACK TO FORECAST" in blob
+    assert "PawaCast" in blob
+    assert at.session_state.get("site_id") is None
+
+
 def test_nigeria_country(monkeypatch):
     at = _launch(monkeypatch, tooltip="Maji Moto, Narok (PollPower pilot)")
     _by_label(at.selectbox, "Country").select("NG").run(timeout=TIMEOUT)

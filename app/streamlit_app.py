@@ -7,6 +7,7 @@ from __future__ import annotations
 import json
 import os
 import pathlib
+import re
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FuturesTimeout
 from datetime import date
@@ -33,18 +34,28 @@ from pawacast.model.loglinear import load_frozen
 from pawacast.model.update_v2 import update_v2
 from pawacast.sharing.ingest import maji_moto_sharing_demo
 from pawacast.targets.demo import DEMO_SITES
-from theme import ASH, FLARE, PLASMA, SUN, footer, inject
+from theme import (
+    ASH,
+    BACK_LINK_HTML,
+    FLARE,
+    PLASMA,
+    README_HEAD_HTML,
+    SUN,
+    footer,
+    inject,
+    title_block,
+)
 
 FREEZE = "c3df2c8"
 PIN_TIMEOUT_S = 60
 PIN_OFF_MSG = (
     "LIVE FORECASTS FOR NEW LOCATIONS ARE OFF IN THIS DEMO — fetching building data for a "
     "new site takes several minutes. Try one of the three demo sites, or run PawaCast "
-    "locally (see README)."
+    'locally (<a href="?view=readme" target="_top">README</a>).'
 )
 PIN_TIMEOUT_MSG = (
     "Timed out after 60 seconds fetching building data for this location. "
-    "Try one of the three demo sites, or run PawaCast locally (see README)."
+    'Try one of the three demo sites, or run PawaCast locally (<a href="?view=readme" target="_top">README</a>).'
 )
 # Page #0A0A0A; body #CCCCCC ≥4.5:1; ghost #888 on page ~5.6:1 (small labels);
 # Sun #FFD93D on page ~12:1; white on answer card ~19:1.
@@ -52,6 +63,54 @@ PIN_TIMEOUT_MSG = (
 
 def _live_pin_enabled() -> bool:
     return os.environ.get("PAWACAST_LIVE_PIN", "0") == "1"
+
+
+def _query_view() -> str:
+    try:
+        value = st.query_params.get("view", "")
+    except Exception:
+        value = ""
+    if isinstance(value, (list, tuple)):
+        value = value[0] if value else ""
+    return str(value or "").strip().lower()
+
+
+_MD_IMG = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
+_MD_LINK = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
+
+
+def _is_external_url(url: str) -> bool:
+    u = url.strip()
+    return u.startswith("http://") or u.startswith("https://") or u.startswith("mailto:")
+
+
+def _prepare_readme(text: str) -> str:
+    """Keep external links; turn repo-relative links into monospace filenames."""
+
+    def _img(match: re.Match) -> str:
+        alt, url = match.group(1), match.group(2)
+        if _is_external_url(url):
+            return match.group(0)
+        return alt or ""
+
+    def _link(match: re.Match) -> str:
+        url = match.group(2).strip()
+        if _is_external_url(url):
+            return match.group(0)
+        name = url.split("#", 1)[0].rstrip("/").split("/")[-1] or match.group(1)
+        return f"`{name}`"
+
+    text = _MD_IMG.sub(_img, text)
+    return _MD_LINK.sub(_link, text)
+
+
+def _render_readme() -> None:
+    raw = (ROOT / "README.md").read_text(encoding="utf-8")
+    body = _prepare_readme(raw)
+    st.markdown(README_HEAD_HTML, unsafe_allow_html=True)
+    st.markdown(BACK_LINK_HTML, unsafe_allow_html=True)
+    st.markdown(f'<div class="readme-page">\n\n{body}\n\n</div>', unsafe_allow_html=True)
+    st.markdown(BACK_LINK_HTML, unsafe_allow_html=True)
 
 
 def _pin_card(text: str) -> None:
@@ -261,6 +320,11 @@ def init_state():
 
 def main():
     inject()
+    if _query_view() == "readme":
+        _render_readme()
+        footer()
+        return
+    title_block()
     init_state()
     model, frozen = _model()
     cal = _cal(_mtime("meter_update_v2.json"))
