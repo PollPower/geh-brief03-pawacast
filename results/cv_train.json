@@ -50,13 +50,24 @@
   ],
   "ridge_lambda": 2.0,
   "beta_log_bld": 0.3031258114090143,
-  "sigma_log_residual": 0.6300063551833005,
-  "range_width_from_sigma": 5.027044765108479,
+  "interval": {
+    "method": "oof_sigma",
+    "sigma": 0.6994248481546623,
+    "q10": -0.7755496674169687,
+    "q90": 0.9389430698826512,
+    "n": 18,
+    "width_from_percentiles": 5.553857532924238,
+    "width_from_sigma": 6.0060408483196355,
+    "mean_log_resid": 0.03918492853725134,
+    "reason": "n=18 makes empirical P10/P90 jumpy (\u22482nd order statistic); use sd of LOGO log(actual/P50) with Z90."
+  },
+  "sigma_log_residual": 0.6994248481546623,
+  "range_width_from_sigma": 6.0060408483196355,
   "metrics": {
     "pawacast": {
       "median_ape": 0.46105677539198153,
-      "coverage_p10_p90": 0.7222222222222222,
-      "range_width": 4.933736127643947,
+      "coverage_p10_p90": 0.8333333333333334,
+      "range_width": 6.0060408483196355,
       "bias": 0.03009423482361493,
       "n": 18
     },

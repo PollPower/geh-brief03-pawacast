@@ -16,7 +16,14 @@ import numpy as np
 import pandas as pd
 
 from .growth import ANCHOR_MONTH, fit_observed_growth, observed_curve, to_month
-from .loglinear import IMPUTATION_SITES, REF_MONTH, fit, load_train_sites
+from .loglinear import (
+    IMPUTATION_SITES,
+    REF_MONTH,
+    apply_oof_interval,
+    calibrate_oof_interval,
+    fit,
+    load_train_sites,
+)
 from .prior import SIGMA, Z90, estimate as estimate_v0
 from ..targets.public import GROWTH
 from ..targets.renewvia import TEST_SITES
@@ -52,7 +59,7 @@ def v0_at_ref(row: pd.Series) -> tuple[float, float, float]:
     return e.p10 * k, e.p50 * k, e.p90 * k
 
 
-def logo_cv(sites: pd.DataFrame, switched: list[str] | None = None) -> pd.DataFrame:
+def logo_cv(sites: pd.DataFrame, switched: list[str] | None = None) -> tuple[pd.DataFrame, dict]:
     switched = set(switched or [])
     rows = []
     for grp, held in sites.groupby("group"):
@@ -74,10 +81,7 @@ def logo_cv(sites: pd.DataFrame, switched: list[str] | None = None) -> pd.DataFr
                     "used_observed_only": r.projectName in switched,
                     "n_window": int(r.n_window),
                     "actual": actual,
-                    "p10": float(r.p10),
                     "p50": float(r.p50),
-                    "p90": float(r.p90),
-                    "inside": bool(r.p10 <= actual <= r.p90),
                     "ape_pawacast": float(ape(r.p50, actual)),
                     "p10_amda": a10, "p50_amda": a50, "p90_amda": a90,
                     "ape_amda": float(ape(a50, actual)),
@@ -91,7 +95,13 @@ def logo_cv(sites: pd.DataFrame, switched: list[str] | None = None) -> pd.DataFr
                     "amda": float(r.amda),
                 }
             )
-    return pd.DataFrame(rows).sort_values("site").reset_index(drop=True)
+    cv = pd.DataFrame(rows).sort_values("site").reset_index(drop=True)
+    cal = calibrate_oof_interval(cv.actual, cv.p50)
+    p10, _, p90 = apply_oof_interval(cv.p50, cal)
+    cv["p10"] = p10
+    cv["p90"] = p90
+    cv["inside"] = (cv.actual >= cv.p10) & (cv.actual <= cv.p90)
+    return cv, cal
 
 
 def plot_growth(sm: pd.DataFrame, gfit: dict, curve: pd.DataFrame, path: pathlib.Path) -> None:
@@ -162,10 +172,10 @@ def run() -> dict:
     print("observed_only sites:", switched, flush=True)
     print(check[check.candidate].to_string(index=False), flush=True)
 
-    cv = logo_cv(sites, switched)
+    cv, cal = logo_cv(sites, switched)
     if set(cv.site) & set(TEST_SITES):
         raise RuntimeError("CV scored a sealed test site")
-    full = fit(sites)
+    full = fit(sites, sigma=cal["sigma"], interval_method=cal["method"])
     gfit = fit_observed_growth(sm)
     curve = observed_curve(gfit, months=range(0, 49))
 
@@ -229,6 +239,7 @@ def run() -> dict:
         ],
         "ridge_lambda": full.lam,
         "beta_log_bld": float(full.beta[0]),
+        "interval": cal,
         "sigma_log_residual": float(full.sigma),
         "range_width_from_sigma": float(math.exp(2 * Z90 * full.sigma)),
         "metrics": methods,
@@ -241,7 +252,27 @@ def run() -> dict:
         "target_flags": sites.target_flag.value_counts().to_dict(),
     }
 
+    frozen = {
+        "formula": "log(kWh) = log(AMDA country) + beta_bld * log(bld_count / 300)",
+        "beta_bld": float(full.beta[0]),
+        "ref_bld": 300.0,
+        "ridge_lambda": float(full.lam),
+        "interval_method": cal["method"],
+        "sigma": float(full.sigma),
+        "z90": float(Z90),
+        "ref_month": REF_MONTH,
+        "window_lo": 12,
+        "window_hi": 24,
+        "target": "gap-filled kWh/customer/month, median of site-months with months_since_power_on in [12, 24]",
+        "growth_form": "log(kWh) = a_site + slope * (log1p(month) - log1p(18))",
+        "growth_slope": float(gfit["slope"]),
+        "growth_annual_0_24": float(gfit["annual_0_24"]),
+        "growth_annual_12_24": float(gfit["annual_12_24"]),
+    }
     OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "model_frozen.json").write_text(
+        json.dumps(frozen, indent=2), encoding="utf-8"
+    )
     cv.to_csv(OUT / "cv_train_sites.csv", index=False, encoding="utf-8", lineterminator="\n")
     (OUT / "cv_train.json").write_text(
         json.dumps(summary, indent=2, default=_json_default), encoding="utf-8"

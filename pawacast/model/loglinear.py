@@ -9,7 +9,8 @@ within 1 km) returns the country baseline. β is ridge-shrunk toward 0 (λ = 2).
 One fitted predictor (at most 3 allowed). Mean footprint, grid distance, POIs
 and night lights are omitted: on TRAIN, footprint is collinear with country,
 grid distance is confounded with the Turkana refugee settlements, and POI/NTL
-are near zero. Residual log-sd sets P10/P90 — not the v0 SIGMA.
+are near zero. P10/P90 width is the leave-one-group-out residual spread (OOF sigma of
+log(actual/P50)), not in-sample residuals and not the v0 SIGMA.
 
 Source of consumption: Renewvia (Zenodo 10.5281/zenodo.22149101, CC BY-SA 4.0).
 AMDA baselines: BAM 2022 Table 1 (KE 2020 = 3.7, NG 2020 = 11.0).
@@ -155,12 +156,42 @@ def ridge_beta(X: np.ndarray, y: np.ndarray, lam: float = RIDGE_LAMBDA) -> np.nd
     return np.linalg.solve(X.T @ X + lam * np.eye(p), X.T @ y)
 
 
+def calibrate_oof_interval(actual, p50) -> dict:
+    """Interval from out-of-fold log(actual/P50). n=18: OOF sigma, not raw percentiles."""
+    e = np.log(np.asarray(actual, dtype=float) / np.asarray(p50, dtype=float))
+    q10, q90 = (float(x) for x in np.percentile(e, [10, 90]))
+    sigma = float(np.std(e, ddof=1))
+    return {
+        "method": "oof_sigma",
+        "sigma": sigma,
+        "q10": q10,
+        "q90": q90,
+        "n": int(len(e)),
+        "width_from_percentiles": float(math.exp(q90 - q10)),
+        "width_from_sigma": float(math.exp(2 * Z90 * sigma)),
+        "mean_log_resid": float(np.mean(e)),
+        "reason": (
+            "n=18 makes empirical P10/P90 jumpy (≈2nd order statistic); "
+            "use sd of LOGO log(actual/P50) with Z90."
+        ),
+    }
+
+
+def apply_oof_interval(p50, cal: dict) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    p50 = np.asarray(p50, dtype=float)
+    if cal["method"] == "oof_percentiles":
+        return p50 * math.exp(cal["q10"]), p50, p50 * math.exp(cal["q90"])
+    s = float(cal["sigma"])
+    return p50 * math.exp(-Z90 * s), p50, p50 * math.exp(Z90 * s)
+
+
 @dataclass
 class LogLinearFit:
     beta: np.ndarray
     sigma: float
     lam: float = RIDGE_LAMBDA
     n_sites: int = 0
+    interval_method: str = "oof_sigma"
     drivers_names: tuple = ("Mapped buildings",)
 
     def estimate(self, features: dict, country: str = "KE") -> Estimate:
@@ -194,10 +225,15 @@ class LogLinearFit:
         return out
 
 
-def fit(sites: pd.DataFrame, lam: float = RIDGE_LAMBDA) -> LogLinearFit:
+def fit(sites: pd.DataFrame, lam: float = RIDGE_LAMBDA, sigma: float | None = None,
+        interval_method: str = "oof_sigma") -> LogLinearFit:
     X = design_matrix(sites)
     y = np.log(sites.kwh.to_numpy(float)) - np.log(sites.amda.to_numpy(float))
     beta = ridge_beta(X, y, lam)
     resid = y - X @ beta
-    sigma = float(np.std(resid, ddof=1)) if len(resid) > 2 else 0.65
-    return LogLinearFit(beta=beta, sigma=sigma, lam=lam, n_sites=len(sites))
+    if sigma is None:
+        sigma = float(np.std(resid, ddof=1)) if len(resid) > 2 else 0.65
+    return LogLinearFit(
+        beta=beta, sigma=float(sigma), lam=lam, n_sites=len(sites),
+        interval_method=interval_method,
+    )

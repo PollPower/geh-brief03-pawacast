@@ -1,0 +1,17 @@
+{
+  "formula": "log(kWh) = log(AMDA country) + beta_bld * log(bld_count / 300)",
+  "beta_bld": 0.3031258114090143,
+  "ref_bld": 300.0,
+  "ridge_lambda": 2.0,
+  "interval_method": "oof_sigma",
+  "sigma": 0.6994248481546623,
+  "z90": 1.2816,
+  "ref_month": 18,
+  "window_lo": 12,
+  "window_hi": 24,
+  "target": "gap-filled kWh/customer/month, median of site-months with months_since_power_on in [12, 24]",
+  "growth_form": "log(kWh) = a_site + slope * (log1p(month) - log1p(18))",
+  "growth_slope": 0.08463413938171409,
+  "growth_annual_0_24": 0.14592639972808774,
+  "growth_annual_12_24": 0.056904659623138176
+}
