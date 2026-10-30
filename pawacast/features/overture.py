@@ -30,6 +30,8 @@ def latest_release() -> str:
 
 def connect() -> duckdb.DuckDBPyConnection:
     con = duckdb.connect()
+    con.execute("SET memory_limit='400MB'")
+    con.execute("SET threads=2")
     for ext in ("httpfs", "spatial"):
         con.install_extension(ext); con.load_extension(ext)
     con.execute("SET s3_region='us-west-2'")
