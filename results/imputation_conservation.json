@@ -1,0 +1,76 @@
+{
+  "note": "TRAIN only. Test readings files were not opened.",
+  "sites": {
+    "Emereoke": {
+      "files": [
+        "sparkmeterreadings_clean_Emereoke.parquet"
+      ],
+      "energy_by_method": [
+        {
+          "imputation_method": "observed",
+          "n_slots": 5622501,
+          "kwh": 30887.39500031958,
+          "n_meters": 401
+        },
+        {
+          "imputation_method": "profile",
+          "n_slots": 27989398,
+          "kwh": 35556.65499819186,
+          "n_meters": 399
+        },
+        {
+          "imputation_method": "uniform",
+          "n_slots": 3739,
+          "kwh": 0.6100017902783438,
+          "n_meters": 6
+        }
+      ],
+      "observed_energy_share": 0.4648589517980726,
+      "n_mixed_meters_sampled": 12,
+      "lastEnergy_join": {
+        "n_joined": 0,
+        "med_clean": NaN,
+        "med_lastEnergy": NaN,
+        "med_ratio_clean_over_last": NaN
+      },
+      "window_12_24_gapfilled": 5.086629632759289,
+      "window_12_24_observed_only": 2.0922169658902363
+    },
+    "Kalobeyei Settlement": {
+      "files": [
+        "sparkmeterreadings_clean_Kalobeyei_Settlement_Village_2B.parquet",
+        "sparkmeterreadings_clean_Kalobeyei_Settlement_Village_3A.parquet"
+      ],
+      "energy_by_method": [
+        {
+          "imputation_method": "observed",
+          "n_slots": 25940134,
+          "kwh": 225587.4575799113,
+          "n_meters": 420
+        },
+        {
+          "imputation_method": "profile",
+          "n_slots": 6981324,
+          "kwh": 49430.36489151352,
+          "n_meters": 420
+        },
+        {
+          "imputation_method": "uniform",
+          "n_slots": 5255,
+          "kwh": 29.495558487147115,
+          "n_meters": 4
+        }
+      ],
+      "observed_energy_share": 0.8201769033624179,
+      "n_mixed_meters_sampled": 12,
+      "lastEnergy_join": {
+        "n_joined": 0,
+        "med_clean": NaN,
+        "med_lastEnergy": NaN,
+        "med_ratio_clean_over_last": NaN
+      },
+      "window_12_24_gapfilled": 19.70073427220683,
+      "window_12_24_observed_only": 15.336178414714286
+    }
+  }
+}

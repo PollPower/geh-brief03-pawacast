@@ -10,15 +10,14 @@
     "Ozuzu"
   ],
   "imputation": {
+    "decision": "gap_filled_for_all_train_sites",
+    "reason": "profile/uniform slots redistribute the cumulative energy register across communication gaps (conserved to 1e-5). observed_only undercounts.",
     "threshold": 0.15,
     "candidates": [
       "Emereoke",
       "Kalobeyei Settlement"
     ],
-    "switched_to_observed_only": [
-      "Kalobeyei Settlement",
-      "Emereoke"
-    ],
+    "switched_to_observed_only": [],
     "per_site": [
       {
         "projectName": "Kalobeyei Settlement",
@@ -27,7 +26,7 @@
         "median_abs_rel": 0.5766633651898618,
         "window_rel": -0.221542801257409,
         "candidate": true,
-        "use_observed_only": true
+        "use_observed_only": false
       },
       {
         "projectName": "Emereoke",
@@ -36,29 +35,34 @@
         "median_abs_rel": 0.43769868679149787,
         "window_rel": -0.5886830540175787,
         "candidate": true,
-        "use_observed_only": true
+        "use_observed_only": false
       }
-    ]
+    ],
+    "emereoke_window_12_24": {
+      "gapfilled": 5.086629632759289,
+      "observed_only": 2.0922169658902363,
+      "used": 5.086629632759289
+    }
   },
   "predictors": [
     "AMDA country baseline (offset / prior)",
     "log(building count / 300)"
   ],
   "ridge_lambda": 2.0,
-  "beta_log_bld": 0.2624593759660141,
-  "sigma_log_residual": 0.7174776742755131,
-  "range_width_from_sigma": 6.290488777090883,
+  "beta_log_bld": 0.3031258114090143,
+  "sigma_log_residual": 0.6300063551833005,
+  "range_width_from_sigma": 5.027044765108479,
   "metrics": {
     "pawacast": {
-      "median_ape": 0.4526713282814505,
-      "coverage_p10_p90": 0.8333333333333334,
-      "range_width": 6.29979615555092,
-      "bias": 0.07912563587552338,
+      "median_ape": 0.46105677539198153,
+      "coverage_p10_p90": 0.7222222222222222,
+      "range_width": 4.933736127643947,
+      "bias": 0.03009423482361493,
       "n": 18
     },
     "amda": {
       "median_ape": 0.5202799914926033,
-      "coverage_p10_p90": 0.7777777777777778,
+      "coverage_p10_p90": 0.8333333333333334,
       "range_width": 5.2913848605851825,
       "bias": 0.2503699609685657,
       "n": 18
@@ -71,26 +75,26 @@
       "n": 18
     },
     "brief20": {
-      "median_ape": 2.8234987772202946,
+      "median_ape": 2.661362985639806,
       "coverage_p10_p90": 0.2777777777777778,
       "range_width": 5.2913848605851825,
-      "bias": 1.3347225056100187,
+      "bias": 1.2950986302443352,
       "n": 18
     }
   },
   "growth": {
-    "slope": 0.041451766905915836,
-    "intercept_log_at_18": 1.632662114656274,
-    "sigma_within": 0.4899995193715593,
-    "tau_site": 0.6141793136607466,
+    "slope": 0.08463413938171409,
+    "intercept_log_at_18": 1.670328952024813,
+    "sigma_within": 0.4277156964349465,
+    "tau_site": 0.6483129100275334,
     "n_sites": 18,
     "n_rows": 870,
-    "site_slope_p10": -0.6158236847914814,
+    "site_slope_p10": -0.359723744681376,
     "site_slope_p50": 0.21898866764393426,
     "site_slope_p90": 0.5111569109117113,
-    "annual_0_12": 0.11217958811378104,
-    "annual_12_24": 0.027477128219948188,
-    "annual_0_24": 0.06898975170952526,
+    "annual_0_12": 0.24244632818820921,
+    "annual_12_24": 0.056904659623138176,
+    "annual_0_24": 0.14592639972808774,
     "published_rates": [
       {
         "source": "Blodgett 2017 (8 KE sites)",
@@ -112,7 +116,7 @@
       }
     ],
     "annual_band_0_24_p10_p50_p90": [
-      -0.6288429481793951,
+      -0.4395151311787756,
       0.42254662616217975,
       1.2765822647063163
     ]
@@ -125,7 +129,7 @@
     },
     {
       "name": "Mapped buildings",
-      "multiplier": 1.1300489991443374,
+      "multiplier": 1.1516602174458686,
       "reason": "478 buildings within 1 km vs a typical village of 300"
     }
   ],

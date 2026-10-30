@@ -204,10 +204,24 @@ def run() -> dict:
         "n_groups": int(sites.group.nunique()),
         "sealed_test_sites": sealed,
         "imputation": {
+            "decision": "gap_filled_for_all_train_sites",
+            "reason": (
+                "profile/uniform slots redistribute the cumulative energy register "
+                "across communication gaps (conserved to 1e-5). observed_only undercounts."
+            ),
             "threshold": 0.15,
             "candidates": list(IMPUTATION_SITES),
             "switched_to_observed_only": switched,
             "per_site": check[check.candidate].to_dict(orient="records"),
+            "emereoke_window_12_24": {
+                "gapfilled": float(
+                    sites.loc[sites.projectName == "Emereoke", "kwh_gapfilled"].iloc[0]
+                ),
+                "observed_only": float(
+                    sites.loc[sites.projectName == "Emereoke", "kwh_observed_only"].iloc[0]
+                ),
+                "used": float(sites.loc[sites.projectName == "Emereoke", "kwh"].iloc[0]),
+            },
         },
         "predictors": [
             "AMDA country baseline (offset / prior)",

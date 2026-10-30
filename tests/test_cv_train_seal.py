@@ -16,12 +16,15 @@ def test_site_level_excludes_test_sites():
     assert set(TEST_SITES).isdisjoint(set(switched))
 
 
-def test_imputation_switches_high_gap_sites():
-    sm = load_site_months(role="train")
-    check = imputation_check(sm)
-    flagged = set(check.loc[check.use_observed_only, "projectName"])
-    assert "Emereoke" in flagged
-    assert "Kalobeyei Settlement" in flagged
+def test_imputation_does_not_switch_after_conservation_decision():
+    sites, sm, check, switched = load_train_sites()
+    assert switched == []
+    assert not check.use_observed_only.any()
+    em = check.loc[check.projectName == "Emereoke"].iloc[0]
+    ks = check.loc[check.projectName == "Kalobeyei Settlement"].iloc[0]
+    assert em.median_abs_rel > 0.15 and ks.median_abs_rel > 0.15
+    # training target is gap-filled for every site
+    assert (sm.kwh_used == sm.kwh_cust_month).all()
 
 
 def test_load_test_still_sealed(monkeypatch):

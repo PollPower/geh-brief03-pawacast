@@ -84,4 +84,14 @@ Licence: CC BY-SA 4.0 — any derived dataset we publish (site-month aggregates)
 
 ## Deviations
 
-None yet.
+### 31 Oct 2026 — TRAIN target uses gap-filled kWh for every site
+
+Block 2 first treated `profile`/`uniform` slots as possibly invented and switched Emereoke and Kalobeyei Settlement to `kwh_cust_month_observed_only` (median |rel. diff.| 44% and 58%).
+
+The clean product does **not** invent energy. It diffs the meter’s cumulative `energy` register and redistributes a known gap total onto missed 15-minute slots (`Data Dictionary.md`, sparkmeterreadings_clean: “redistributing gap energy”; “sum of `energy_kwh` … equals the sum of valid raw energy diffs to within 1 × 10⁻⁵”). Null/invalid diffs produce no rows. `observed_only` therefore undercounts real consumption.
+
+**Change:** all TRAIN sites use gap-filled `kwh_cust_month`. R-test readings files were not opened.
+
+**CV before the change** (observed_only on those two sites): PawaCast median APE 45.3%, coverage 83% (15/18), P90/P10 6.3, bias +0.08. Emereoke 12–24 month actual 2.09 kWh.
+
+**CV after** (gap-filled for all 18): PawaCast median APE 46.1%, coverage 72% (13/18), P90/P10 4.93, bias +0.03. Emereoke 12–24 month actual 5.09 kWh. AMDA 52.0% / v0 55.5% / brief 20 kWh 266%. Model not frozen.

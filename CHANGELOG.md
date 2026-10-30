@@ -32,6 +32,7 @@ Times are ET. The line between pre-sprint and sprint work is the git tag `geh202
 - Log-linear model with AMDA country offset (KE 3.7 / NG 11.0) and one fitted predictor, log(building count / 300), ridge λ=2. Footprint, grid distance, POIs and night lights dropped (weak or confounded on TRAIN). P10/P90 from residual log-sd (σ≈0.72), not v0 SIGMA.
 - Leave-one-group-out CV over 13 TRAIN groups (`results/cv_train.json`, `results/cv_train_sites.csv`): PawaCast median APE 45%, coverage 83% (15/18), P90/P10 6.3, bias +0.08. AMDA 52% / 78% / 5.3 / +0.25; v0 55% / 56% / 5.3 / −0.01; brief 20 kWh 282%. Not frozen. Test sites not used.
 - Growth: site intercept + common log1p(month) slope on TRAIN site-months. Common within-site growth ≈7%/year (near Blodgett 8%); 12→24 months only ≈3%. Published 8% / 21% / 47% all sit inside the wide per-site slope band. Figure `results/growth_curve.png`.
+- Imputation decision (docs + TRAIN check on Emereoke / Kalobeyei Settlement): `profile`/`uniform` redistribute the cumulative `energy` register across comms gaps (conserved to 1e-5), they do not invent kWh. Reverted to gap-filled `kwh_cust_month` for **all** TRAIN sites. Emereoke 12–24 actual: 5.09 gap-filled vs 2.09 observed_only. Re-ran LOGO CV: PawaCast median APE 46.1%, coverage 72% (13/18), P90/P10 4.93, bias +0.03 (was 45.3% / 83% / 6.3 / +0.08 with observed_only on two sites). AMDA 52% / v0 55% / brief 20 kWh 266%. Logged under EVAL_PLAN Deviations. Not frozen. Test sites not opened.
 
 ### Hours 12–16
 ### Hours 16–24

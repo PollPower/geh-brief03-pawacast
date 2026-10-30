@@ -33,6 +33,10 @@ REF_BLD = 300.0          # typical rural village, buildings within 1 km (documen
 RIDGE_LAMBDA = 2.0       # prior β ~ 0; λ chosen a priori, not by the reporting CV
 IMPUTATION_SITES = ("Emereoke", "Kalobeyei Settlement")
 IMPUTATION_THRESHOLD = 0.15
+# Decision (Block 2, after reading the clean-product spec): profile/uniform slots
+# redistribute the meter's cumulative `energy` register across comms gaps; the
+# total is conserved. observed_only undercounts. Use gap-filled kwh_cust_month
+# for every TRAIN site. See EVAL_PLAN.md Deviations.
 FEATURES_PATH = (
     __import__("pathlib").Path(__file__).resolve().parents[2] / "data" / "features" / "renewvia.parquet"
 )
@@ -60,24 +64,20 @@ def imputation_check(sm: pd.DataFrame) -> pd.DataFrame:
                 "median_abs_rel": float(rel.abs().median()),
                 "window_rel": win_rel,
                 "candidate": site in IMPUTATION_SITES,
-                "use_observed_only": bool(
-                    site in IMPUTATION_SITES and rel.abs().median() > IMPUTATION_THRESHOLD
-                ),
+                # Always False: imputed energy is conserved register consumption.
+                "use_observed_only": False,
             }
         )
     return pd.DataFrame(rows).sort_values("median_abs_rel", ascending=False).reset_index(drop=True)
 
 
 def apply_imputation(sm: pd.DataFrame, check: pd.DataFrame | None = None) -> tuple[pd.DataFrame, list[str]]:
+    """Always keep gap-filled kWh. `check` is retained as a diagnostic."""
     if check is None:
         check = imputation_check(sm)
-    switched = check.loc[check.use_observed_only, "projectName"].tolist()
     out = sm.copy()
     out["kwh_used"] = out.kwh_cust_month
-    if switched:
-        m = out.projectName.isin(switched)
-        out.loc[m, "kwh_used"] = out.loc[m, "kwh_cust_month_observed_only"]
-    return out, switched
+    return out, []
 
 
 def site_level_targets(sm: pd.DataFrame) -> pd.DataFrame:
