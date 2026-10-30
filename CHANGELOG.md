@@ -54,6 +54,7 @@ Times are ET. The line between pre-sprint and sprint work is the git tag `geh202
 - Deck growth card `results/growth_curve_deck.png`: frozen TRAIN slope, months 0–24, median + band, caption “most sites flat after year 1”, transparent background.
 - Top drivers `results/top_drivers.json`: (1) country baseline KE 3.7 vs NG 11.0, (2) mapped buildings elasticity 0.30, (3) months since connection (flat after year 1). Kalobeyei Town 3.3× and Settlement 4.1× above the LOGO forecast.
 - Cost from Renewvia capex (USD; dictionary says LCU but magnitudes match USD): Kenya median $8,229/kWp, $3,853/kWh-storage (all-in), $1,041/connection; Nigeria $11,833/kWp, $765/connection. Maji Moto 100 HH frozen P50 3.88 kWh → 3.3 kWp / ~$54k; P90 9.52 kWh → 8.2 kWp / ~$133k. `results/cost_estimate.json`.
+- Streamlit app `app/streamlit_app.py`: map + demo sites, Maji Moto answer card, drivers, growth, meters-correct with **update v2** (TRAIN-LOGO ~80% coverage; simulated readings labelled SIMULATED), HTML lender report, How tested from `results/eval_final.json`. No Playwright PDF (HTML download instead). Day-one model frozen.
 
 ### Hours 24–32 (feature freeze at 32)
 ### Hours 32–48
