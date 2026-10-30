@@ -307,10 +307,13 @@ def main():
             f"post-hoc and still weak. Frozen model `{FREEZE}`."
         )
     cost = _cost()["maji_moto"]
+    a50 = cost["size_p50"]["a_generation_and_storage_sized_to_demand"]
+    b50 = cost["size_p50"]["b_all_in_per_connection_from_actuals"]
     st.caption(
-        f"Maji Moto 100-household sizing (frozen P50): {cost['size_p50']['kwp']:.1f} kWp, "
-        f"about ${cost['size_p50']['cost_usd_from_kwp_and_storage']:,.0f} using Kenya median USD/kWp. "
-        f"Sources: Overture Maps · VIIRS · GridFinder · AMDA · Renewvia. Model {FREEZE}."
+        f"Maji Moto 100 HH (frozen P50): (a) demand-sized {a50['kwp']:.1f} kWp × Kenya all-in "
+        f"${a50['usd_per_kwp_all_in']:,.0f}/kWp = ${a50['cost_usd']:,.0f}; "
+        f"(b) 100 × ${b50['usd_per_connection']:,.0f}/connection = ${b50['cost_usd']:,.0f}. "
+        f"Do not add those. Sources: Overture Maps · VIIRS · GridFinder · AMDA · Renewvia. Model {FREEZE}."
     )
 
 

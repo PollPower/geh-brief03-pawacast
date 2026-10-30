@@ -392,28 +392,80 @@
         "reason": "326 buildings within 1 km vs a typical village of 300"
       }
     ],
-    "pv_yield_assumption": "4.5 kWh/kWp/day \u00d7 30.44 days \u00d7 0.85 performance = 116.4 kWh/kWp/month (NREL PVWatts-class, documented)",
+    "assumptions": {
+      "kwh_per_kwp_day": 4.5,
+      "days_per_month": 30.44,
+      "pv_performance_ratio": 0.85,
+      "kwh_per_kwp_month": 116.433,
+      "kwh_per_kwp_day_source": "4.5 kWh/kWp/day is an NREL PVWatts-class Kenya equatorial figure, documented here, not fitted. 0.85 performance is inverter/soiling/availability, also documented, not fitted.",
+      "battery_days_of_autonomy": "Not chosen as a free parameter. Storage is sized at the Kenya median 2.08 kWh-battery per kWp (Renewvia sizeBattery/sizePv). Implied days of autonomy = that battery / (site daily kWh).",
+      "distribution_cost_per_connection": "Renewvia capex is all-in (generation + storage + distribution + other). We cannot isolate distribution. Median Kenya all-in is $1,041/connection and $8,229/kWp; those are two views of the same capex, not additive line items. No separate distribution add-on is applied.",
+      "unit_cost_warning": "usd_per_kwp, usd_per_kwh_storage and usd_per_connection each divide the SAME capex by a different denominator. Never add them."
+    },
     "kenya_unit_costs_used": {
-      "usd_per_kwp_median": 8228.80569075988,
-      "usd_per_kwh_storage_median": 3852.7293202293204,
-      "usd_per_connection_median": 1040.8510101010102,
-      "kwh_storage_per_kwp_median": 2.0770963783368455
+      "usd_per_kwp_median_all_in": 8228.80569075988,
+      "usd_per_kwh_storage_median_all_in_do_not_add": 3852.7293202293204,
+      "usd_per_connection_median_all_in": 1040.8510101010102,
+      "kwh_storage_per_kwp_median": 2.0770963783368455,
+      "kwp_per_connection_median": 0.12697749774977496
     },
     "size_p50": {
+      "label": "P50",
       "kwh_cust_month": 3.8835660610717095,
+      "households": 100,
       "site_kwh_month": 388.35660610717093,
-      "kwp": 3.3354513420350838,
-      "battery_kwh": 6.928053902659843,
-      "cost_usd_from_kwp_and_storage": 54138.69738749773,
-      "cost_usd_from_per_connection": 104085.10101010102
+      "daily_kwh": 12.758101383284195,
+      "a_generation_and_storage_sized_to_demand": {
+        "kwp": 3.3354513420350838,
+        "battery_kwh": 6.928053902659843,
+        "days_of_autonomy": 0.5430317328985217,
+        "usd_per_kwp_all_in": 8228.80569075988,
+        "cost_usd": 27446.780984590976,
+        "arithmetic": "100 \u00d7 3.8836 kWh/cust/mo = 388.36 kWh/mo; kWp = 388.36 / (4.5 \u00d7 30.44 \u00d7 0.85) = 388.36 / 116.433 = 3.335 kWp; battery = 3.335 \u00d7 2.077 kWh/kWp = 6.93 kWh (0.54 days of daily 12.76 kWh); cost (a) = 3.335 kWp \u00d7 $8,228.81/kWp = $27,447. All-in $/kWp already includes PV, storage and distribution as built; do not add $3,853/kWh-storage or $1,041/connection."
+      },
+      "b_all_in_per_connection_from_actuals": {
+        "usd_per_connection": 1040.8510101010102,
+        "cost_usd": 104085.10101010102,
+        "equivalent_kwp_if_built_like_median_ke": 12.697749774977495,
+        "arithmetic": "cost (b) = 100 \u00d7 $1,040.85/connection = $104,085. Median Kenya Renewvia site is 0.127 kWp/customer, so 100 connections would be 12.7 kWp; 12.70 \u00d7 $8,228.81/kWp = $104,487. Close to (b) $104,085; not identical because median(capex/n) \u2260 median(kWp/n)\u00d7median(capex/kWp)."
+      },
+      "error_withdrawn": {
+        "was_usd": 54138.69738749773,
+        "why": "kWp \u00d7 $/kWp + battery_kWh \u00d7 (capex/sizeBattery) = 3.335\u00d78228.81 + 6.93\u00d73852.73 = $54,139. Both unit costs attribute 100% of capex, so this double-counts. Withdrawn."
+      },
+      "why_a_differs_from_b": "(a) sizes PV to PawaCast demand (3.34 kWp). (b) copies how Kenya Renewvia sites were actually built (12.7 kWp for 100 connections). Demand-sized (a) is smaller because AMDA/PawaCast Kenya use is ~3.9 kWh/customer/month."
     },
     "size_p90": {
+      "label": "P90",
       "kwh_cust_month": 9.517542786570262,
+      "households": 100,
       "site_kwh_month": 951.7542786570262,
-      "kwp": 8.174265703512116,
-      "battery_kwh": 16.978737688328103,
-      "cost_usd_from_kwp_and_storage": 132678.9246511481,
-      "cost_usd_from_per_connection": 104085.10101010102
+      "daily_kwh": 31.266566315933844,
+      "a_generation_and_storage_sized_to_demand": {
+        "kwp": 8.174265703512116,
+        "battery_kwh": 16.978737688328103,
+        "days_of_autonomy": 0.5430317328985217,
+        "usd_per_kwp_all_in": 8228.80569075988,
+        "cost_usd": 67264.44413884381,
+        "arithmetic": "100 \u00d7 9.5175 kWh/cust/mo = 951.75 kWh/mo; kWp = 951.75 / (4.5 \u00d7 30.44 \u00d7 0.85) = 951.75 / 116.433 = 8.174 kWp; battery = 8.174 \u00d7 2.077 kWh/kWp = 16.98 kWh (0.54 days of daily 31.27 kWh); cost (a) = 8.174 kWp \u00d7 $8,228.81/kWp = $67,264. All-in $/kWp already includes PV, storage and distribution as built; do not add $3,853/kWh-storage or $1,041/connection."
+      },
+      "b_all_in_per_connection_from_actuals": {
+        "usd_per_connection": 1040.8510101010102,
+        "cost_usd": 104085.10101010102,
+        "equivalent_kwp_if_built_like_median_ke": 12.697749774977495,
+        "arithmetic": "cost (b) = 100 \u00d7 $1,040.85/connection = $104,085. Median Kenya Renewvia site is 0.127 kWp/customer, so 100 connections would be 12.7 kWp; 12.70 \u00d7 $8,228.81/kWp = $104,487. Close to (b) $104,085; not identical because median(capex/n) \u2260 median(kWp/n)\u00d7median(capex/kWp)."
+      },
+      "error_withdrawn": {
+        "was_usd": 132678.9246511481,
+        "why": "kWp \u00d7 $/kWp + battery_kWh \u00d7 (capex/sizeBattery) = 8.174\u00d78228.81 + 16.98\u00d73852.73 = $132,679. Both unit costs attribute 100% of capex, so this double-counts. Withdrawn."
+      },
+      "why_a_differs_from_b": "(a) sizes PV to PawaCast demand (8.17 kWp). (b) copies how Kenya Renewvia sites were actually built (12.7 kWp for 100 connections). Demand-sized (a) is smaller because AMDA/PawaCast Kenya use is ~9.5 kWh/customer/month."
+    },
+    "headline": {
+      "p50_a_demand_sized_usd": 27446.780984590976,
+      "p90_a_demand_sized_usd": 67264.44413884381,
+      "p50_and_p90_b_all_in_per_connection_usd": 104085.10101010102,
+      "withdrawn": "P50 $54k and P90 $133k (kWp\u00d7$/kWp + battery\u00d7$/kWh-storage double-count)"
     }
   }
 }

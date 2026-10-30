@@ -10,7 +10,6 @@ Source: Renewvia (Zenodo 10.5281/zenodo.22149101, CC BY-SA 4.0).
 from __future__ import annotations
 
 import json
-import math
 import sys
 from pathlib import Path
 
@@ -23,7 +22,6 @@ from pawacast.features import build_features
 from pawacast.model.growth import observed_multiplier
 from pawacast.model.loglinear import load_frozen
 from pawacast.targets.demo import DEMO_SITES
-from pawacast.targets.renewvia import tariff_class
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "results"
@@ -104,19 +102,75 @@ def main():
     usd_batt = ke["usd_per_kwh_storage"]["median"]
     usd_conn = ke["usd_per_connection"]["median"]
     batt_ratio = ke["kwh_storage_per_kwp"]["median"]
+    kwp_per_conn = ke["kwp_per_connection"]["median"]
 
-    def size_at(kwh_cust: float) -> dict:
-        site_kwh = n_hh * kwh_cust
-        kwp = site_kwh / kwh_per_kwp_month
-        batt = kwp * batt_ratio
+    def size_at(kwh_cust: float, label: str) -> dict:
+        site_kwh_month = n_hh * kwh_cust
+        daily_kwh = site_kwh_month / DAYS
+        kwp = site_kwh_month / kwh_per_kwp_month
+        batt_kwh = kwp * batt_ratio
+        days_autonomy = batt_kwh / daily_kwh if daily_kwh else None
+        cost_a = kwp * usd_kwp
+        cost_b = n_hh * usd_conn
+        # The previous $54k / $133k added (a) to battery×(capex/battery). Both
+        # ratios already spend 100% of the same capex. Do not add them.
+        double_count = kwp * usd_kwp + batt_kwh * usd_batt
         return {
+            "label": label,
             "kwh_cust_month": kwh_cust,
-            "site_kwh_month": site_kwh,
-            "kwp": kwp,
-            "battery_kwh": batt,
-            "cost_usd_from_kwp_and_storage": kwp * usd_kwp + batt * usd_batt,
-            "cost_usd_from_per_connection": n_hh * usd_conn,
+            "households": n_hh,
+            "site_kwh_month": site_kwh_month,
+            "daily_kwh": daily_kwh,
+            "a_generation_and_storage_sized_to_demand": {
+                "kwp": kwp,
+                "battery_kwh": batt_kwh,
+                "days_of_autonomy": days_autonomy,
+                "usd_per_kwp_all_in": usd_kwp,
+                "cost_usd": cost_a,
+                "arithmetic": (
+                    f"{n_hh} × {kwh_cust:.4f} kWh/cust/mo = {site_kwh_month:.2f} kWh/mo; "
+                    f"kWp = {site_kwh_month:.2f} / ({KWH_PER_KWP_DAY} × {DAYS} × {PERF}) "
+                    f"= {site_kwh_month:.2f} / {kwh_per_kwp_month:.3f} = {kwp:.3f} kWp; "
+                    f"battery = {kwp:.3f} × {batt_ratio:.3f} kWh/kWp = {batt_kwh:.2f} kWh "
+                    f"({days_autonomy:.2f} days of daily {daily_kwh:.2f} kWh); "
+                    f"cost (a) = {kwp:.3f} kWp × ${usd_kwp:,.2f}/kWp = ${cost_a:,.0f}. "
+                    f"All-in $/kWp already includes PV, storage and distribution as built; "
+                    f"do not add ${usd_batt:,.0f}/kWh-storage or ${usd_conn:,.0f}/connection."
+                ),
+            },
+            "b_all_in_per_connection_from_actuals": {
+                "usd_per_connection": usd_conn,
+                "cost_usd": cost_b,
+                "equivalent_kwp_if_built_like_median_ke": n_hh * kwp_per_conn,
+                "arithmetic": (
+                    f"cost (b) = {n_hh} × ${usd_conn:,.2f}/connection = ${cost_b:,.0f}. "
+                    f"Median Kenya Renewvia site is {kwp_per_conn:.3f} kWp/customer, so "
+                    f"100 connections would be {n_hh * kwp_per_conn:.1f} kWp; "
+                    f"{n_hh * kwp_per_conn:.2f} × ${usd_kwp:,.2f}/kWp = "
+                    f"${n_hh * kwp_per_conn * usd_kwp:,.0f}. Close to (b) ${cost_b:,.0f}; "
+                    f"not identical because median(capex/n) ≠ median(kWp/n)×median(capex/kWp)."
+                ),
+            },
+            "error_withdrawn": {
+                "was_usd": double_count,
+                "why": (
+                    f"kWp × $/kWp + battery_kWh × (capex/sizeBattery) = "
+                    f"{kwp:.3f}×{usd_kwp:.2f} + {batt_kwh:.2f}×{usd_batt:.2f} = "
+                    f"${double_count:,.0f}. Both unit costs attribute 100% of capex, so "
+                    f"this double-counts. Withdrawn."
+                ),
+            },
+            "why_a_differs_from_b": (
+                f"(a) sizes PV to PawaCast demand ({kwp:.2f} kWp). "
+                f"(b) copies how Kenya Renewvia sites were actually built "
+                f"({n_hh * kwp_per_conn:.1f} kWp for 100 connections). "
+                f"Demand-sized (a) is smaller because AMDA/PawaCast Kenya use is "
+                f"~{kwh_cust:.1f} kWh/customer/month."
+            ),
         }
+
+    size_p50 = size_at(p50_24, "P50")
+    size_p90 = size_at(p90_24, "P90")
 
     payload = {
         "source": "Renewvia minigridprojects + customers (meterRole=Customer Meter). Zenodo 10.5281/zenodo.22149101, CC BY-SA 4.0.",
@@ -138,32 +192,63 @@ def main():
             "frozen_p10_p50_p90_month18": [est18.p10, est18.p50, est18.p90],
             "frozen_p10_p50_p90_month24": [p10_24, p50_24, p90_24],
             "drivers": [{"name": n, "multiplier": m, "reason": r} for n, m, r in est18.drivers],
-            "pv_yield_assumption": (
-                f"{KWH_PER_KWP_DAY} kWh/kWp/day × {DAYS} days × {PERF} performance "
-                f"= {kwh_per_kwp_month:.1f} kWh/kWp/month (NREL PVWatts-class, documented)"
-            ),
-            "kenya_unit_costs_used": {
-                "usd_per_kwp_median": usd_kwp,
-                "usd_per_kwh_storage_median": usd_batt,
-                "usd_per_connection_median": usd_conn,
-                "kwh_storage_per_kwp_median": batt_ratio,
+            "assumptions": {
+                "kwh_per_kwp_day": KWH_PER_KWP_DAY,
+                "days_per_month": DAYS,
+                "pv_performance_ratio": PERF,
+                "kwh_per_kwp_month": kwh_per_kwp_month,
+                "kwh_per_kwp_day_source": (
+                    "4.5 kWh/kWp/day is an NREL PVWatts-class Kenya equatorial figure, "
+                    "documented here, not fitted. 0.85 performance is inverter/soiling/"
+                    "availability, also documented, not fitted."
+                ),
+                "battery_days_of_autonomy": (
+                    "Not chosen as a free parameter. Storage is sized at the Kenya median "
+                    f"{batt_ratio:.2f} kWh-battery per kWp (Renewvia sizeBattery/sizePv). "
+                    "Implied days of autonomy = that battery / (site daily kWh)."
+                ),
+                "distribution_cost_per_connection": (
+                    "Renewvia capex is all-in (generation + storage + distribution + "
+                    "other). We cannot isolate distribution. Median Kenya all-in is "
+                    f"${usd_conn:,.0f}/connection and ${usd_kwp:,.0f}/kWp; those are two "
+                    "views of the same capex, not additive line items. No separate "
+                    "distribution add-on is applied."
+                ),
+                "unit_cost_warning": (
+                    "usd_per_kwp, usd_per_kwh_storage and usd_per_connection each divide "
+                    "the SAME capex by a different denominator. Never add them."
+                ),
             },
-            "size_p50": size_at(p50_24),
-            "size_p90": size_at(p90_24),
+            "kenya_unit_costs_used": {
+                "usd_per_kwp_median_all_in": usd_kwp,
+                "usd_per_kwh_storage_median_all_in_do_not_add": usd_batt,
+                "usd_per_connection_median_all_in": usd_conn,
+                "kwh_storage_per_kwp_median": batt_ratio,
+                "kwp_per_connection_median": kwp_per_conn,
+            },
+            "size_p50": size_p50,
+            "size_p90": size_p90,
+            "headline": {
+                "p50_a_demand_sized_usd": size_p50["a_generation_and_storage_sized_to_demand"]["cost_usd"],
+                "p90_a_demand_sized_usd": size_p90["a_generation_and_storage_sized_to_demand"]["cost_usd"],
+                "p50_and_p90_b_all_in_per_connection_usd": size_p50["b_all_in_per_connection_from_actuals"]["cost_usd"],
+                "withdrawn": "P50 $54k and P90 $133k (kWp×$/kWp + battery×$/kWh-storage double-count)",
+            },
         },
     }
     path = OUT / "cost_estimate.json"
     path.write_text(json.dumps(payload, indent=2, default=float), encoding="utf-8")
-    print("Kenya median USD/kWp", round(usd_kwp), "USD/kWh-storage", round(usd_batt),
-          "USD/connection", round(usd_conn))
-    print("Nigeria median USD/kWp", round(by["Nigeria"]["usd_per_kwp"]["median"]),
-          "USD/connection", round(by["Nigeria"]["usd_per_connection"]["median"]))
+    a50 = size_p50["a_generation_and_storage_sized_to_demand"]
+    a90 = size_p90["a_generation_and_storage_sized_to_demand"]
+    b50 = size_p50["b_all_in_per_connection_from_actuals"]
+    print("Kenya median USD/kWp", round(usd_kwp), "USD/connection", round(usd_conn))
     print("Maji Moto P50@24", round(p50_24, 2), "P90@24", round(p90_24, 2))
-    print("size P50 kWp", round(payload["maji_moto"]["size_p50"]["kwp"], 2),
-          "cost_kwp+batt", round(payload["maji_moto"]["size_p50"]["cost_usd_from_kwp_and_storage"]),
-          "cost_per_conn", round(payload["maji_moto"]["size_p50"]["cost_usd_from_per_connection"]))
-    print("size P90 kWp", round(payload["maji_moto"]["size_p90"]["kwp"], 2),
-          "cost_kwp+batt", round(payload["maji_moto"]["size_p90"]["cost_usd_from_kwp_and_storage"]))
+    print("(a) P50", round(a50["kwp"], 2), "kWp  $", round(a50["cost_usd"]))
+    print("(a) P90", round(a90["kwp"], 2), "kWp  $", round(a90["cost_usd"]))
+    print("(b) 100 × $/connection  $", round(b50["cost_usd"]))
+    print("withdrawn double-count P50 $", round(size_p50["error_withdrawn"]["was_usd"]))
+    print(a50["arithmetic"])
+    print(b50["arithmetic"])
     print("wrote", path)
 
 
