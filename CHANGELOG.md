@@ -24,6 +24,7 @@ Times are ET. The line between pre-sprint and sprint work is the git tag `geh202
 - Added `pawacast/targets/renewvia.py`: DuckDB site-month aggregator with build-time seal (test readings never opened unless `PAWACAST_FINAL_EVAL=1`), loader guard, partial-month kWh/day × 30.44, observed-slot active-meter rule, `kwh_cust_month_observed_only`. Train output `data/targets/renewvia_site_months_train.parquet`.
 - Added `tests/test_renewvia_seal.py` proving the loader raises `HeldOutError` for test sites without the flag, and that the builder does not list test readings files. `duckdb` and `pytest` added to `requirements.txt`.
 - Built TRAIN site-months (flag off): sealed Balep, Bendeghe-Afi, Opu, Kapelbok, Ozuzu (files not opened); skipped Emakalakala (no clean readings file). 18 train sites, 871 site-months → `data/targets/renewvia_site_months_train.parquet`. Summary in `results/renewvia_train_summary.csv`. Test parquet was not created.
+- Cached site features for all 24 Renewvia sites (`data/features/renewvia.parquet`; coordinates only, including test) and reused the 3 demo-site cache (`data/features/demo_sites.parquet`). Preview in `results/renewvia_features_preview.csv`.
 
 ### Hours 05–16
 ### Hours 16–24

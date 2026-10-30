@@ -533,7 +533,7 @@ def build_sprint_features(refresh: bool = False) -> dict[str, pd.DataFrame]:
     f_rv = build_features(rv, name="renewvia", refresh=refresh)
     demo = DEMO_SITES.copy()
     print(f"features: {len(demo)} demo sites", flush=True)
-    f_demo = build_features(demo, name="demo", refresh=refresh)
+    f_demo = build_features(demo, name="demo_sites", refresh=refresh)
     return {"renewvia": f_rv, "demo": f_demo}
 
 
