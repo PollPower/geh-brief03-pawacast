@@ -23,7 +23,8 @@
     "epsilon_period": "month",
     "yearly_epsilon_budget": 12.0,
     "kwh_clip": 20.0,
-    "label": "Tier 2 demo built from Renewvia open data (CC BY-SA 4.0)"
+    "label": "Tier 2 demo built from Renewvia open data (CC BY-SA 4.0)",
+    "commitment": "1eae1b26cc773271b42727c9b0e973249420fd62cd44b3d518d103d1f8c615ca"
   },
   "noise_vs_n": [
     {

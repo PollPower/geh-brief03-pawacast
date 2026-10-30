@@ -1,0 +1,13 @@
+# zk/build/ is gitignored — do not commit proving keys or the JS shim.
+# Regenerated on Linux with: compactc zk/record.compact zk/build/
+#
+# compactc  --version:          0.30.0
+# compactc  --language-version: 0.22.0
+# compactc  --runtime-version:  0.15.0
+# N_MAX:                        128
+# proving key:                  ~306 MB (not committed)
+# generated on the build server; fixtures pass there.
+#
+# Circuit logic tested on 4 fixtures (valid; too few customers;
+# wrong commitment; non-zero padding). Not deployed; no on-chain
+# proofs generated during the sprint.

@@ -9,3 +9,7 @@ data/
 
 !results/
 *.log
+
+# Compact build artifacts — regenerate with: compactc zk/record.compact zk/build/
+zk/build/
+zk/node_modules

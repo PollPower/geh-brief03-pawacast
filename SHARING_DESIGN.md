@@ -14,9 +14,9 @@ This is a design only. Nothing here is built before the sprint.
 | Number of active customers, rounded to the nearest 5 | Any single customer's consumption |
 | Mean kWh per customer, and P10 / P50 / P90 across customers | Tariffs, revenue, margins |
 | Share of customers that are businesses (rounded to 10%) | Payment history |
-| A proof that the numbers come from genuine meter readings | The readings themselves |
+| A 32-byte commitment to the exact per-customer totals, and a Compact proof against that commitment | The readings themselves |
 
-A record is only published if the site has **at least 10 active customers** that month (k-anonymity). Small noise (differential privacy, ε set per record) is added to the published statistics so no customer can be reverse-engineered from repeated releases.
+A record is only published if the site has **at least 25 active customers** that month (k-anonymity). The proof shows the operator's exact site-month total and customer count match readings it committed to earlier, without revealing any customer's values. Privacy noise is added after the proof, to the public release only. The published (noised) figure is not itself proven.
 
 ## 2. Why anyone should believe the numbers
 
@@ -26,10 +26,10 @@ Two trust tiers, so operators without PollPower hardware can still join:
 1. Each meter reading is signed on the chip by the gateway's secure element (Ed25519). Milestone II showed this on real hardware.
 2. The Meter Authority has registered that gateway key. The EBT v8 contract only mints from readings that pass the three-check gate (secure element signature, Meter Authority key, producer attestation held inside the EBT v8 contract).
 3. The operator builds the monthly record from those settled readings and submits a zero-knowledge proof on Midnight that:
-   - the published total and count equal the sum and count of readings already committed in EBT settlement for that site and month;
-   - the count is ≥ 10;
-   - the published P10/P50/P90 are consistent with the committed per-customer totals.
-   The proof reveals the statistics and nothing else.
+   - the exact (pre-noise) total and count equal the sum and count of readings already committed in EBT settlement for that site and month;
+   - the count is ≥ 25;
+   - those totals match the prior commitment, without revealing per-customer values.
+   Privacy noise is added after the proof, to the public release only. The published (noised) figure is not itself proven. P10/P50/P90 across customers are not in the circuit.
 
 **Tier 2 — other operators' meters (lighter).**
 1. The operator exports monthly per-customer totals from their own metering platform (SteamaCo, SparkMeter, Odyssey export, etc.).
@@ -52,7 +52,7 @@ Two trust tiers, so operators without PollPower hardware can still join:
 
 ## 5. Legal frame (Timothy)
 
-- Kenya Data Protection Act 2019: published records are aggregated and anonymised; confirm they fall outside "personal data" with k ≥ 10, rounding and noise.
+- Kenya Data Protection Act 2019: published records are aggregated and anonymised; confirm they fall outside "personal data" with k ≥ 25, rounding and noise.
 - A short data-sharing agreement: what is shared, licence (CC BY 4.0 for published records), right to withdraw future records, no re-identification.
 - Customer notice: operators tell customers that anonymised site statistics may be shared.
 
@@ -60,7 +60,7 @@ Two trust tiers, so operators without PollPower hardware can still join:
 
 1. Record schema (JSON) and validator.
 2. Aggregation script: per-customer monthly totals → published record (k-threshold, rounding, noise).
-3. Compact circuit: prove published sum and count match committed values, and count ≥ 10. Compile and test locally; deploy to Midnight Preview only if time allows.
+3. Compact circuit: prove exact sum and count match a prior commitment, and count ≥ 25. Compile and test locally; deploy to Midnight Preview only if time allows. Sites with n > 128 split into near-equal chunks of size ≤ 128.
 4. PawaCast ingest: load shared records and use them in the prior and growth curve.
 5. One-page explainer for operators and lenders.
 

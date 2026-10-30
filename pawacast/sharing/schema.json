@@ -17,6 +17,7 @@
     "business_share",
     "tier",
     "proof_ref",
+    "commitment",
     "epsilon",
     "epsilon_period",
     "yearly_epsilon_budget",
@@ -83,9 +84,14 @@
     },
     "proof_ref": {
       "type": "string",
-      "description": "Reference to a Compact/Midnight proof that published sum and count match committed per-customer values and count >= 25. Demo records use a demo: prefix and are not on-chain.",
+      "description": "Reference to a Compact/Midnight proof that the exact (pre-noise) sum and count match a prior commitment. Demo records use a demo: prefix and are not on-chain. The published noised mean is not what is proven.",
       "minLength": 1,
       "maxLength": 256
+    },
+    "commitment": {
+      "type": "string",
+      "description": "SHA-256 (hex) of the exact per-customer millikWh vector that the proof is checked against. Published before noise. 32 bytes.",
+      "pattern": "^[0-9a-f]{64}$"
     },
     "epsilon": {
       "type": "number",

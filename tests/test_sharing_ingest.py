@@ -28,6 +28,7 @@ def test_radius_includes_olkiramatian_cell():
             "business_share": 0.2,
             "tier": 2,
             "proof_ref": "demo-no-proof:train:renewvia_olkiramatian:2022-06",
+            "commitment": "cd" * 32,
             "epsilon": 1.0,
             "epsilon_period": "month",
             "yearly_epsilon_budget": 12.0,

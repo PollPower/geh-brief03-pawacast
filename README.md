@@ -38,4 +38,19 @@ pip install -r requirements.txt
   Documentation and data dictionary: https://github.com/Renewvia-Energy/minigrid-dataset
 - Overture Maps Foundation (ODbL / CDLA-Permissive); VIIRS annual night lights, OpenGeoHub (Zenodo 17294744, CC BY 4.0); GridFinder, Arderne et al. 2020 (Zenodo 3628142, CC BY 4.0); AMDA *Benchmarking Africa's Minigrids*; Blodgett et al. 2017; Wassie & Ahlgren 2024.
 
+## Sharing meter data (sprint)
+
+Operators share a site-month **record**, not a customer list. The proof shows
+the operator's exact site-month total and customer count match readings it
+committed to earlier, without revealing any customer's values. Privacy noise
+is added after the proof, to the public release only. The published (noised)
+figure is not itself proven.
+
+Proof circuit compiles with compactc 0.30.0 (Midnight), not deployed; proves
+sum and count against a prior commitment without revealing per-customer
+values. Circuit compiles with compactc 0.30.0 (N_MAX 128, proving key 306 MB).
+Circuit logic tested on 4 fixtures (valid; too few customers; wrong
+commitment; non-zero padding). Not deployed; no on-chain proofs generated
+during the sprint. See `zk/COMPILE.md` and `SHARING_DESIGN.md`.
+
 Licence: to be decided before submission.

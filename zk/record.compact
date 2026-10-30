@@ -1,52 +1,89 @@
-// Compact circuit: published sum and count match committed per-customer values,
-// and count >= 25. Reveals only the published totals.
+// Compact circuit: published sum and count match a prior commitment's
+// per-customer millikWh, and count >= 25. Reveals those totals and the
+// 32-byte commitment; not any one customer's value.
 //
-// Percentiles (P10/P50/P90) are NOT proven here — SHARING_DESIGN.md leaves that
-// as an open question (expensive in Compact). Laplace noise is applied outside
-// the circuit after the exact sum/count proof.
+// Percentiles (P10/P50/P90) are NOT proven here — SHARING_DESIGN.md leaves
+// that as an open question. Privacy noise is added AFTER this proof, to the
+// public release only. The published (noised) mean is not what is proven.
 //
 // Values are millikWh (kWh * 1000, rounded) so we stay in integers.
-// Unused slots in the length-32 vector MUST be zero (padding).
+// Unused slots in the length-128 vector MUST be zero (padding).
 //
-// Compile on Linux with compactc 0.30.0 (PollPower contracts WI-13 pin).
-// See zk/COMPILE.md. Do not compile on Windows. Do not deploy without asking.
+// Ported to Compact 0.22 (language 0.22.0, compactc 0.30.0). Syntax
+// reference: PollPower/contracts EBT v8 and tariff-registry.
+// Compile on Linux; see zk/COMPILE.md. Do not compile on Windows.
+// Do not deploy without asking.
 //
-// k-anonymity floor is 25 (raised from 10: Laplace |noise| at n=10 with a
-// 20 kWh clip is 40% of a typical 5 kWh mean).
+// k-anonymity floor is 25, matching pawacast/sharing/validate.py
+// MIN_CUSTOMERS. Sites with n > 128 split into near-equal chunks
+// (see COMPILE.md §Vector width) so every chunk is still >= 25.
 
 pragma language_version >= 0.16 && <= 0.22;
 
 import CompactStandardLibrary;
 
-export ledger {}
+// =============================================================================
+// Compile-time bounds
+// =============================================================================
 
-const K_MIN: Uint<32> = 25;
-const N_MAX: Uint<32> = 32;
+pure circuit K_MIN(): Uint<32> { return 25 as Uint<32>; }
+
+// Vector width. Sites larger than this are split in Python into c = ceil(n/128)
+// near-equal chunks (sizes differ by at most 1). Never "full 128 plus remainder".
+pure circuit N_MAX(): Uint<32> { return 128 as Uint<32>; }
+
+// =============================================================================
+// Scratch ledger cells for in-circuit accumulation
+// =============================================================================
+// Compact 0.22 does not allow mutable locals inside circuits; a for-loop
+// accumulator MUST live in ledger state (tariff-registry _actionLogClimb).
+// These cells hold no cross-call meaning — reset to zero at the start of
+// every proof call. They are not a published site-month record.
+export ledger _proofSum: Uint<64>;
+export ledger _proofIdx: Uint<32>;
+
+// =============================================================================
+// Witnesses
+// =============================================================================
 
 witness privateN(): Uint<32>;
-witness privateValuesMilliKwh(): Vector<32, Uint<32>>;
+witness privateValuesMilliKwh(): Vector<128, Uint<32>>;
+witness privateCommitment(): Bytes<32>;
 
+// =============================================================================
+// Main proof circuit
+// =============================================================================
+
+// Public: n, exact sum (before Laplace noise), and the 32-byte commitment
+// the operator published earlier. The proof binds the witness vector to that
+// commitment (same 32 bytes) and checks sum/count; it does not re-hash in
+// circuit (SHA-256 of millikWh is computed off-circuit into this field).
 export circuit prove_published_sum_and_count(
   publishedN: Uint<32>,
-  publishedSumMilliKwh: Uint<64>
-): Boolean {
-  const n = privateN();
-  const values = privateValuesMilliKwh();
+  publishedSumMilliKwh: Uint<64>,
+  commitment: Bytes<32>,
+): [] {
+  const n = disclose(privateN());
+  const values = disclose(privateValuesMilliKwh());
+  const bound = disclose(privateCommitment());
 
-  assert n == publishedN;
-  assert n >= K_MIN;
-  assert n <= N_MAX;
+  assert(n == disclose(publishedN), "N_MISMATCH");
+  assert(n >= K_MIN(), "N_BELOW_K_MIN");
+  assert(n <= N_MAX(), "N_ABOVE_N_MAX");
+  assert(bound == disclose(commitment), "COMMIT_MISMATCH");
 
-  let mut acc: Uint<64> = 0;
-  let mut i: Uint<32> = 0;
+  _proofSum = 0 as Uint<64>;
+  _proofIdx = 0 as Uint<32>;
+
   for (const v of values) {
+    const i = _proofIdx;
     if (i < n) {
-      acc = acc + (v as Uint<64>);
+      _proofSum = (_proofSum + (v as Uint<64>)) as Uint<64>;
     } else {
-      assert v == 0;
+      assert(v == (0 as Uint<32>), "PADDING_NONZERO");
     }
-    i = i + 1;
+    _proofIdx = (_proofIdx + (1 as Uint<32>)) as Uint<32>;
   }
-  assert acc == publishedSumMilliKwh;
-  return true;
+
+  assert(_proofSum == disclose(publishedSumMilliKwh), "SUM_MISMATCH");
 }

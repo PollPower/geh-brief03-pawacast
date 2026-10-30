@@ -443,9 +443,10 @@ def main():
             "- H3 cell (~36 km²), not the pin\n"
             "- Month, and months since power-on\n"
             "- Customer count, rounded to 5 (only if ≥ 25)\n"
-            "- Mean / P10 / P50 / P90 kWh per customer\n"
+            "- Mean / P10 / P50 / P90 kWh per customer (after privacy noise)\n"
             "- Business share, rounded to 10%\n"
-            "- A proof that sum and count match the committed meters"
+            "- A 32-byte commitment to the exact per-customer totals\n"
+            "- A Compact proof against that prior commitment"
         )
     with c_priv:
         st.markdown("**What stays private**")
@@ -455,6 +456,19 @@ def main():
             "- Any one customer’s kWh\n"
             "- Tariffs, revenue, margins, payment history"
         )
+    st.markdown(
+        "The proof shows the operator's exact site-month total and customer count "
+        "match readings it committed to earlier, without revealing any customer's "
+        "values. Privacy noise is added after the proof, to the public release only."
+    )
+    st.markdown(
+        "Proof circuit compiles with compactc 0.30.0 (Midnight), not deployed; "
+        "proves sum and count against a prior commitment without revealing "
+        "per-customer values. Circuit compiles with compactc 0.30.0 (N_MAX 128, "
+        "proving key 306 MB). Circuit logic tested on 4 fixtures (valid; too few "
+        "customers; wrong commitment; non-zero padding). Not deployed; no on-chain "
+        "proofs generated during the sprint."
+    )
     st.markdown(
         "**Tier 1 — PollPower-metered.** Readings are signed on the chip; the proof "
         "is against EBT settlement. Strongest weight.\n\n"

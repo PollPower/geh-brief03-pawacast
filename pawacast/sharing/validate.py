@@ -35,6 +35,7 @@ REQUIRED = (
     "business_share",
     "tier",
     "proof_ref",
+    "commitment",
     "epsilon",
     "epsilon_period",
     "yearly_epsilon_budget",
@@ -165,6 +166,16 @@ def validate_record(record: Any) -> dict:
     proof = record["proof_ref"]
     if not isinstance(proof, str) or not proof.strip() or len(proof) > 256:
         raise RecordError("proof_ref must be a non-empty string")
+
+    commitment = record["commitment"]
+    if not isinstance(commitment, str) or len(commitment) != 64:
+        raise RecordError("commitment must be a 64-char hex SHA-256")
+    try:
+        int(commitment, 16)
+    except ValueError as e:
+        raise RecordError("commitment must be a 64-char hex SHA-256") from e
+    if commitment != commitment.lower():
+        raise RecordError("commitment must be lowercase hex")
 
     eps = _num(record, "epsilon")
     if eps <= 0 or eps > 10:

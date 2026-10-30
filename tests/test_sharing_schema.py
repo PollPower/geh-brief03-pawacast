@@ -27,6 +27,7 @@ def _ok(**kwargs):
         "business_share": 0.2,
         "tier": 2,
         "proof_ref": "demo:train:example:2022-06",
+        "commitment": "ab" * 32,
         "epsilon": 1.0,
         "epsilon_period": "month",
         "yearly_epsilon_budget": 12.0,
@@ -128,6 +129,17 @@ def test_reject_missing_field():
     del rec["proof_ref"]
     with pytest.raises(RecordError, match="missing"):
         validate_record(rec)
+    rec = _ok()
+    del rec["commitment"]
+    with pytest.raises(RecordError, match="missing"):
+        validate_record(rec)
+
+
+def test_reject_bad_commitment():
+    with pytest.raises(RecordError, match="commitment"):
+        validate_record(_ok(commitment="not-a-hash"))
+    with pytest.raises(RecordError, match="commitment"):
+        validate_record(_ok(commitment="AB" * 32))
 
 
 def test_yearly_budget_must_be_12_times_epsilon():

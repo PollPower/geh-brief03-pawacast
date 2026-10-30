@@ -1,9 +1,9 @@
 """Per-customer monthly totals → public shared record.
 
 TRAIN Renewvia sites only. Test-site consumption is never opened (iter_build_jobs
-with the final-eval flag off). Published statistics get Laplace noise; ε is in
-the record. Compact proves the exact sum and count; the published mean is that
-sum/count after noise and rounding.
+with the final-eval flag off). Compact proves the exact sum and count against a
+prior commitment. Privacy noise is added after that proof, to the public release
+only. The published (noised) mean is not itself proven.
 
 Source: Renewvia (Zenodo 10.5281/zenodo.22149101, CC BY-SA 4.0).
 """
@@ -27,6 +27,7 @@ from pawacast.targets.renewvia import (
     tariff_class,
 )
 
+from .chunk import N_MAX, split_into_chunks
 from .validate import (
     EPSILON_PERIOD,
     MIN_CUSTOMERS,
@@ -44,6 +45,19 @@ TIER2_RENEWVIA_LABEL = (
     "Tier 2 demo built from Renewvia open data (CC BY-SA 4.0)"
 )
 KWH_KEYS = ("mean_kwh_cust", "p10_kwh_cust", "p50_kwh_cust", "p90_kwh_cust")
+
+
+def millikwh_commitment(kwh) -> str:
+    """SHA-256 (hex) of exact per-customer millikWh, little-endian int64 each.
+
+    This is the commitment the Compact proof is checked against. Computed
+    before Laplace noise.
+    """
+    milli = np.rint(np.clip(np.asarray(kwh, dtype=float), 0.0, None) * 1000.0)
+    h = hashlib.sha256()
+    for v in milli.astype(np.int64).tolist():
+        h.update(int(v).to_bytes(8, "little", signed=False))
+    return h.hexdigest()
 
 
 def _seed(site_id: str, month: str) -> int:
@@ -141,6 +155,11 @@ def publish_from_customers(
     n_pub = round_n_customers(n_true)
     if n_pub < MIN_CUSTOMERS:
         raise ValueError(f"rounded n={n_pub} < {MIN_CUSTOMERS}; record not published")
+    # Compact witness is chunked; the public record stays one site-month.
+    chunks = split_into_chunks(clipped.tolist(), max_n=N_MAX)
+    if any(len(p) < MIN_CUSTOMERS for p in chunks):
+        raise ValueError("a Compact chunk fell below k-anonymity")
+    bound = millikwh_commitment(clipped)
 
     mean = float(clipped.mean())
     p10, p50, p90 = (float(x) for x in np.percentile(clipped, [10, 50, 90]))
@@ -168,6 +187,7 @@ def publish_from_customers(
         "business_share": share_n,
         "tier": int(tier),
         "proof_ref": f"demo-no-proof:train:{site_id}:{month}",
+        "commitment": bound,
         "epsilon": float(epsilon),
         "epsilon_period": EPSILON_PERIOD,
         "yearly_epsilon_budget": float(12.0 * epsilon),

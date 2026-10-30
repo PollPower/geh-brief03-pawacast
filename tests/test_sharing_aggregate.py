@@ -51,6 +51,8 @@ def test_publish_n_25_rounds_and_validates():
     assert rec["kwh_clip"] == 20.0
     assert rec["label"] == TIER2_RENEWVIA_LABEL
     assert rec["p10_kwh_cust"] <= rec["p50_kwh_cust"] <= rec["p90_kwh_cust"]
+    assert rec["commitment"]
+    assert len(rec["commitment"]) == 64
 
 
 def test_n_27_rounds_to_25():

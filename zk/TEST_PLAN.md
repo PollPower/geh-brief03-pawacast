@@ -1,39 +1,60 @@
-# Compact circuit test plan (not run here — compile on Linux, see COMPILE.md)
+# Compact circuit test plan
 
-Compiler: compactc **0.30.0** on Linux. Do not compile on Windows. Do not deploy.
+The circuit compiles with `compactc` 0.30.0 (language 0.22.0, runtime 0.15.0,
+N_MAX 128, proving key 306 MB). Build command, output layout, and the offline
+fixture harness are in `zk/COMPILE.md`. Do not compile on Windows. Do not
+deploy. No on-chain proofs generated during the sprint.
 
 ```
-compactc.bin zk/record.compact zk/build
+compactc zk/record.compact zk/build/
 ```
+
+k-min is **25**, matching `pawacast/sharing/validate.py` `MIN_CUSTOMERS`.
+Vector width is **128**; larger sites split into near-equal chunks (COMPILE.md
+§Vector width).
+
+Circuit logic is tested on **4 fixtures**:
 
 ## Cases
 
 ### 1. Valid n = 25 (must accept)
 
-Public: `publishedN = 25`, `publishedSumMilliKwh = 125000`.
+Public: `publishedN = 25`, `publishedSumMilliKwh = 125000`, commitment =
+SHA-256 of those 25 millikWh values.
 
-Witness: 25 × 5000 millikWh, then 7 zeros.
+Witness: 25 × 5000 millikWh, then 103 zeros; `privateCommitment` equals the
+public commitment.
 
 Fixture: `zk/fixtures/valid_n25.json`.
 
-### 2. n = 24 (must reject)
+### 2. Too few customers — n = 24 (must reject)
 
-k-anonymity floor is 25.
+k-anonymity floor is 25. Expect `N_BELOW_K_MIN`.
 
 Fixture: `zk/fixtures/n24_should_fail.json`.
 
-### 3. Count mismatch (must reject)
+### 3. Wrong commitment (must reject)
 
-Public `publishedN = 25`, witness `privateN = 26`.
+Valid n = 25 and matching sum, but public `commitment` ≠ `privateCommitment`.
+Expect `COMMIT_MISMATCH`.
 
-### 4. Sum mismatch (must reject)
+Fixture: `zk/fixtures/wrong_commitment.json`.
 
-Public sum 125000, witness twenty-five values that sum to 125001.
-
-### 5. Dirty padding (must reject)
+### 4. Non-zero padding (must reject)
 
 n = 25, first 25 slots sum correctly, slot 26 is 1 instead of 0.
+Expect `PADDING_NONZERO`.
 
-### 6. n = 32 at the bound (must accept)
+Fixture: `zk/fixtures/dirty_padding.json`.
 
-32 values, no padding. Sum matches.
+## What the proof does not claim
+
+The proof shows the operator's exact site-month total and customer count match
+readings it committed to earlier, without revealing any customer's values.
+Privacy noise is added after the proof, to the public release only. The
+published (noised) figure is not itself proven.
+
+## After compile
+
+Record compiler version, language version, proving-key size, and pass/fail of
+the 4 fixtures in `results/` (do not fabricate). Still do not deploy.

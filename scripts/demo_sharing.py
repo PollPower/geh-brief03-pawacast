@@ -68,8 +68,10 @@ def main() -> None:
             "Per-release ε = 1.0 (one month). Basic composition: 12 monthly releases "
             "spend yearly_epsilon_budget = 12. At n=10 typical |noise| is 2.0 kWh "
             "(40% of a 5 kWh mean) so we do not publish below n=25, where typical "
-            "|noise| is 0.8 kWh (16%). Compact proves exact sum and count; the "
-            "published mean is that ratio after this noise."
+            "|noise| is 0.8 kWh (16%). The proof shows the operator's exact "
+            "site-month total and customer count match readings it committed to "
+            "earlier. Privacy noise is added after the proof, to the public "
+            "release only."
         ),
     }
     OUT_DEMO.parent.mkdir(parents=True, exist_ok=True)
