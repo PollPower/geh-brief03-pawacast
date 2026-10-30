@@ -40,6 +40,25 @@ CSS = f"""
 html, body, [class*="css"] {{ font-family: Inter, sans-serif; color: {ASH}; }}
 h1, h2, h3, .bebas {{ font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.04em; }}
 .mono {{ font-family: 'Space Mono', monospace; color: {ASH}; }}
+.section {{
+  font-family: 'Space Mono', monospace;
+  color: {SUN} !important;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  background: {ASH};
+  display: inline-block;
+  padding: 0.22rem 0.55rem;
+  margin: 0.7rem 0 0.4rem 0;
+}}
+.sources {{
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  color: #ffffff;
+  background: {ASH};
+  margin-top: 1.4rem;
+  padding: 0.65rem 0.75rem;
+}}
 .pp-bar {{
   background: linear-gradient(90deg, {SUN} 0%, {FLARE} 55%, {PLASMA} 100%);
   padding: 0.85rem 1.2rem; margin: -1rem -1rem 1rem -1rem; color: {ASH};
@@ -148,7 +167,7 @@ def waterfall_rows(est18, p50_24: float, k24: float) -> pd.DataFrame:
     rows.append(
         {
             "step": "Country baseline",
-            "kwh": round(level, 2),
+            "kwh": f"{level:.1f}",
             "delta": "",
             "mult": "×1.00",
             "note": "AMDA KE 2020 · 3.7 kWh",
@@ -162,8 +181,8 @@ def waterfall_rows(est18, p50_24: float, k24: float) -> pd.DataFrame:
         rows.append(
             {
                 "step": name,
-                "kwh": round(level, 2),
-                "delta": f"{level - before:+.1f} kWh",
+                "kwh": f"{level:.1f}",
+                "delta": f"{level - before:+.1f}",
                 "mult": f"×{float(mult):.2f}",
                 "note": why,
             }
@@ -171,10 +190,10 @@ def waterfall_rows(est18, p50_24: float, k24: float) -> pd.DataFrame:
     rows.append(
         {
             "step": "At 24 months",
-            "kwh": round(p50_24, 2),
-            "delta": f"{p50_24 - est18.p50:+.1f} kWh",
+            "kwh": f"{p50_24:.1f}",
+            "delta": f"{p50_24 - est18.p50:+.1f}",
             "mult": f"×{k24:.2f}",
-            "note": "frozen growth from month 18",
+            "note": "growth to month 24",
         }
     )
     return pd.DataFrame(rows)
@@ -287,7 +306,7 @@ def main():
         tr6 = 100 * real["summary"]["TRAIN-LOGO"]["6"]["median_ape"]
         rt0 = 100 * real["summary"]["R-test"]["0"]["median_ape"]
         rt6 = 100 * real["summary"]["R-test"]["6"]["median_ape"]
-        st.markdown("<div class='mono'>HOW TESTED</div>", unsafe_allow_html=True)
+        st.markdown("<div class='section'>HOW TESTED</div>", unsafe_allow_html=True)
         with st.expander("How tested", expanded=True):
             st.markdown(
                 f"TRAIN leave-one-group-out median error **{tr0:.0f}% → {int(tr6)}%** "
@@ -300,7 +319,7 @@ def main():
             )
 
     with right:
-        st.markdown("<div class='mono'>SITE</div>", unsafe_allow_html=True)
+        st.markdown("<div class='section'>SITE</div>", unsafe_allow_html=True)
         st.markdown(f"<h2 class='bebas' style='margin-top:0'>{st.session_state.name}</h2>", unsafe_allow_html=True)
         st.caption(f"{st.session_state.lat:.4f}, {st.session_state.lon:.4f} · "
                    f"{float(st.session_state.feats.get('grid_dist_km') or 0):.1f} km to grid")
@@ -325,7 +344,7 @@ def main():
             unsafe_allow_html=True,
         )
 
-        st.markdown("<div class='mono'>WHY THIS NUMBER</div>", unsafe_allow_html=True)
+        st.markdown("<div class='section'>WHY THIS NUMBER</div>", unsafe_allow_html=True)
         wf = waterfall_rows(est18, p50_24, k24)
         st.table(wf)
         st.caption(
@@ -333,7 +352,7 @@ def main():
         )
 
         cost = maji_moto_cost()
-        st.markdown("<div class='mono'>COST (KENYA MEDIAN, 100 HOUSEHOLDS)</div>", unsafe_allow_html=True)
+        st.markdown("<div class='section'>COST (KENYA MEDIAN, 100 HOUSEHOLDS)</div>", unsafe_allow_html=True)
         st.markdown(
             f"**USD {cost['b_cost_usd']:,.0f}** all-in "
             f"(USD {cost['b_usd_per_connection']:,.0f}/connection × {cost['households']})."
@@ -344,12 +363,12 @@ def main():
             f"Do not add (a) and (b); both views use the same capex."
         )
 
-    st.markdown("<div class='mono'>GROWTH AFTER CONNECTION</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section'>GROWTH AFTER CONNECTION</div>", unsafe_allow_html=True)
     prior_c = curve_frame(est18.p10, est18.p50, est18.p90, slope)
     st.altair_chart(growth_chart(prior_c, "#cccccc", FLARE), use_container_width=True)
     st.caption("Most sites flat after year 1 (~7%/yr)")
 
-    st.markdown("<div class='mono'>METERS CORRECT</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section'>METERS CORRECT</div>", unsafe_allow_html=True)
     st.markdown("<span class='sim'>SIMULATED</span> readings for the demo — not signed PollPower meters.",
                 unsafe_allow_html=True)
     a, b, c = st.columns([1, 1, 0.6])
@@ -394,7 +413,7 @@ def main():
     st.download_button("Download lender report (HTML)", data=report,
                        file_name="pawacast-report.html", mime="text/html")
 
-    st.markdown("<div class='mono'>SHARE YOUR METER DATA</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section'>SHARE YOUR METER DATA</div>", unsafe_allow_html=True)
     st.markdown(
         "Operators share a **site-month record**, not a customer list. "
         "PawaCast uses nearby records to shift a new site’s prior; the site’s own "
@@ -437,6 +456,13 @@ def main():
             f"{f18['p50']:.2f} → {b18['p50']:.2f} kWh/customer. Frozen β not refit. "
             f"Tier 2 demo built from Renewvia open data (CC BY-SA 4.0)."
         )
+
+    st.markdown(
+        f"<div class='sources'>Data: Renewvia (Zenodo 10.5281/zenodo.22149101, "
+        f"CC BY-SA 4.0) · AMDA · Overture Maps · VIIRS · GridFinder · "
+        f"Model v1 frozen {FREEZE}</div>",
+        unsafe_allow_html=True,
+    )
 
 
 if __name__ == "__main__":
