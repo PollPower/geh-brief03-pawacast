@@ -24,7 +24,9 @@ if str(ROOT) not in sys.path:
 from pawacast.features import build_features
 from pawacast.model.growth import observed_multiplier
 from pawacast.model.loglinear import load_frozen
+from pawacast.model.prior import Estimate
 from pawacast.model.update_v2 import update_v2
+from pawacast.sharing.ingest import blend_prior, nearby_records, load_records
 from pawacast.targets.demo import DEMO_SITES
 
 SUN, FLARE, PLASMA, ASH = "#FFD93D", "#FF6B35", "#FF3366", "#0D0D0D"
@@ -61,9 +63,14 @@ def _model():
     return load_frozen()
 
 
+def _json(name: str):
+    p = ROOT / "results" / name
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
 @st.cache_data
-def _cal():
-    j = json.loads((ROOT / "results" / "meter_update_v2.json").read_text(encoding="utf-8"))
+def _cal(mtime: float):
+    j = _json("meter_update_v2.json")
     return {
         "noise": j["v2"]["noise"],
         "projection": j["v2"]["projection"],
@@ -72,13 +79,32 @@ def _cal():
 
 
 @st.cache_data
-def _eval():
-    return json.loads((ROOT / "results" / "eval_final.json").read_text(encoding="utf-8"))
+def _eval(mtime: float):
+    return _json("eval_final.json")
 
 
 @st.cache_data
-def _cost():
-    return json.loads((ROOT / "results" / "cost_estimate.json").read_text(encoding="utf-8"))
+def _cost(mtime: float):
+    return _json("cost_estimate.json")
+
+
+@st.cache_data
+def _nearby_blend(lat: float, lon: float, p10: float, p50: float, p90: float, sigma: float, mtime: float):
+    """Shift the on-screen prior with shared records. Frozen β is not refit."""
+    recs = load_records()
+    nearby = nearby_records(recs, lat, lon, radius_km=80.0)
+    est = Estimate(p10=p10, p50=p50, p90=p90, baseline=0.0, drivers=[])
+    blended = blend_prior(est, nearby, sigma)
+    return {
+        "n_nearby": len(nearby),
+        "blended": blended,
+        "dist_note": "80 km radius (Olkiramatian is ~77 km from Maji Moto)",
+    }
+
+
+def _mtime(name: str) -> float:
+    p = ROOT / "results" / name
+    return p.stat().st_mtime if p.exists() else 0.0
 
 
 @st.cache_data
@@ -178,8 +204,8 @@ def main():
     )
     init_state()
     model, frozen = _model()
-    cal = _cal()
-    ev = _eval()
+    cal = _cal(_mtime("meter_update_v2.json"))
+    ev = _eval(_mtime("eval_final.json"))
     feats_demo, demo = _demo_features()
     slope = float(frozen["growth_slope"])
     sigma = float(frozen["sigma"])
@@ -306,7 +332,54 @@ def main():
             f"Meter update v2 is calibrated to ~80% coverage on TRAIN-LOGO; R-test update coverage is "
             f"post-hoc and still weak. Frozen model `{FREEZE}`."
         )
-    cost = _cost()["maji_moto"]
+
+    st.markdown("<div class='mono'>SHARE YOUR METER DATA</div>", unsafe_allow_html=True)
+    st.markdown(
+        "Operators share a **site-month record**, not a customer list. "
+        "PawaCast uses nearby records to shift a new site’s prior; the site’s own "
+        "meters still correct the range."
+    )
+    c_share, c_priv = st.columns(2)
+    with c_share:
+        st.markdown("**What is shared**")
+        st.markdown(
+            "- H3 cell (~36 km²), not the pin\n"
+            "- Month, and months since power-on\n"
+            "- Customer count, rounded to 5 (only if ≥ 10)\n"
+            "- Mean / P10 / P50 / P90 kWh per customer\n"
+            "- Business share, rounded to 10%\n"
+            "- A proof that sum and count match the committed meters"
+        )
+    with c_priv:
+        st.markdown("**What stays private**")
+        st.markdown(
+            "- Exact coordinates\n"
+            "- Customer names, phones, meter IDs\n"
+            "- Any one customer’s kWh\n"
+            "- Tariffs, revenue, margins, payment history"
+        )
+    st.markdown(
+        "**Tier 1 — PollPower-metered.** Readings are signed on the chip; the proof "
+        "is against EBT settlement. Strongest weight.\n\n"
+        "**Tier 2 — other operators.** Export from SteamaCo / SparkMeter / Odyssey, "
+        "signed by the operator. The proof matches the commitment; it does not prove "
+        "the meters were honest. Weighted at half of Tier 1."
+    )
+    if st.session_state.site_id == "demo_maji_moto":
+        share = _nearby_blend(
+            float(st.session_state.lat), float(st.session_state.lon),
+            est18.p10, est18.p50, est18.p90, sigma,
+            _mtime("sharing_records.json"),
+        )
+        b = share["blended"]
+        st.caption(
+            f"DEMO: Maji Moto with Olkiramatian-area records ({share['dist_note']}, "
+            f"{share['n_nearby']} Tier 2 records). Month-18 P50 "
+            f"{est18.p50:.2f} → {b['p50']:.2f} kWh/customer. Frozen β not refit. "
+            f"Tier 2 demo built from Renewvia open data (CC BY-SA 4.0)."
+        )
+
+    cost = _cost(_mtime("cost_estimate.json"))["maji_moto"]
     a50 = cost["size_p50"]["a_generation_and_storage_sized_to_demand"]
     b50 = cost["size_p50"]["b_all_in_per_connection_from_actuals"]
     st.caption(
