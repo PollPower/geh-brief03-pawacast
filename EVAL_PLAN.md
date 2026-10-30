@@ -119,3 +119,15 @@ After the frozen score, a separate model added country intercepts α_KE, α_NG o
 **R-test (post-hoc, test already seen):** v2 median APE 79.6%, coverage 80% (4/5), width 6.23, bias +0.59. Frozen headline remains 136% / 60% / 6.01 / +0.86. The NG intercept (×0.76) fits low TRAIN Nigerian sites and then helps the low Nigerian test sites; that comparison is not a valid selection result.
 
 Saved `results/v2_posthoc.json`. Frozen model and `results/eval_final.json` unchanged.
+
+### 31 Oct 2026 — meter-update v2 (TRAIN-LOGO calibration; R-test post-hoc)
+
+The frozen update (OBS_SIGMA = 0.30, independent months) was overconfident: TRAIN-LOGO coverage 56%/33%/28% at k=1/3/6. Day-one model not changed.
+
+**TRAIN-only estimates:** within-site month-to-month log-sd = 0.428 (not 0.30); lag-1 autocorrelation ρ = 0.743. Extra error of projecting the first-k mean to the months 12–24 level: τ² after subtracting AR(1) sampling. Likelihood sd = sqrt(AR(1) var of k-month mean + τ²). One scale (1.13) chosen on TRAIN-LOGO so |z| coverage at k=1,3,6 is ~80%.
+
+**TRAIN-LOGO v2:** k=1/3/6 coverage 78%/78%/83%, width 3.37/3.13/2.77, median APE 34%/28%/26% (frozen APE 32%/28%/29%, coverage 56%/33%/28%).
+
+**R-test (post-hoc, test already seen):** k=1/3/6 coverage 20%/40%/20%, width 3.37/3.13/2.77, median APE 119%/115%/81% (frozen 96%/64%/56%, coverage 0%/20%/20%). Not used to set the scale.
+
+`results/meter_update_v2.json`. Frozen day-one coefficients and headline R-test table unchanged.

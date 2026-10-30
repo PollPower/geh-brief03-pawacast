@@ -50,5 +50,7 @@ Times are ET. The line between pre-sprint and sprint work is the git tag `geh202
 - Optional v2 (country intercepts shrunk toward AMDA, λ=2): TRAIN LOGO median APE 50.2% (worse than frozen 46.1%), coverage 83%, width 6.23. R-test **post-hoc, test already seen**: 79.6% APE, 80% coverage. Does not replace the headline. `results/v2_posthoc.json`. Logged under EVAL_PLAN Deviations.
 
 ### Hours 16–24
+- Meter-update v2 (TRAIN-LOGO only): month-to-month log-sd 0.428, lag-1 ρ = 0.74, plus first-k→12–24 projection error. TRAIN-LOGO coverage at k=1/3/6 = 78%/78%/83% (was 56%/33%/28%), width 3.37/3.13/2.77, APE 34%/28%/26%. R-test **post-hoc, test already seen**: coverage 20%/40%/20%, APE 119%/115%/81%. Day-one model unchanged. `results/meter_update_v2.json`, chart shows frozen vs v2. Logged under EVAL_PLAN Deviations.
+
 ### Hours 24–32 (feature freeze at 32)
 ### Hours 32–48
