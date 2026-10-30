@@ -7,7 +7,7 @@ Log each send and reply in the table at the bottom — it is evidence for the da
 
 ## 1. AMDA — Africa Minigrid Developers Association
 
-**To:** communications@africamda.org (ask them to forward to the benchmarking/data team)
+**To:** AMDA (ask them to forward to the benchmarking/data team)
 
 **Subject:** Request: anonymised site-level consumption data for an open mini-grid demand model
 
@@ -33,7 +33,7 @@ Founder, PollPower · Poll Power Limited · pollpower.energy
 
 ## 2. CrossBoundary Innovation Lab / Energy 4 Impact
 
-**To:** communications@crossboundary.com (ask them to forward to the Mini-Grid Innovation Lab)
+**To:** CrossBoundary Innovation Lab (ask them to forward to the Mini-Grid Innovation Lab)
 
 **Subject:** Following up your 2019 "Predicting consumption" insight — open demand model
 
@@ -53,7 +53,7 @@ Founder, PollPower · Poll Power Limited · pollpower.energy
 
 ## 3a. Professor Erik Ahlgren (Chalmers), co-author with Dr Yibeltal Wassie
 
-**To:** erik.ahlgren@chalmers.se (corresponding author)
+**To:** Wassie & Ahlgren (Chalmers) (corresponding author)
 **Subject:** Request for site data behind your Omorate and Tum mini-grid study (Energy Policy, 2024)
 
 Dear Professor Ahlgren,
@@ -74,7 +74,7 @@ Founder, PollPower · Poll Power Limited · pollpower.energy
 
 ## 3b. Nicholas Selby (Renewvia), Kenya and Nigeria cohort study
 
-**To:** nicholas.selby@renewvia.com
+**To:** Renewvia
 **Subject:** Request for site-level data from your Kenya and Nigeria mini-grid cohort study
 
 Dear Mr Selby,
@@ -95,7 +95,9 @@ Founder, PollPower · Poll Power Limited · pollpower.energy
 
 | Date | To | Organisation | Reply |
 |---|---|---|---|
-| 28 Oct 2026 | communications@africamda.org | AMDA | awaiting |
-| 28 Oct 2026 | communications@crossboundary.com | CrossBoundary Innovation Lab | awaiting |
-| 28 Oct 2026 | erik.ahlgren@chalmers.se | Wassie & Ahlgren (Chalmers) | awaiting |
-| 28 Oct 2026 | nicholas.selby@renewvia.com | Renewvia (Carabajal et al.) | 28 Oct: survey CSVs at github.com/Renewvia-Energy/impact-analysis; published 24-site operational dataset same day, Zenodo 10.5281/zenodo.22149101 (CC BY-SA 4.0). 29 Oct: data descriptor submitted to Scientific Data — cite it once published, else the Zenodo dataset; docs repo github.com/Renewvia-Energy/minigrid-dataset |
+| 28 Oct 2026 | AMDA | AMDA | awaiting |
+| 28 Oct 2026 | CrossBoundary Innovation Lab | CrossBoundary Innovation Lab | awaiting |
+| 28 Oct 2026 | Wassie & Ahlgren (Chalmers) | Wassie & Ahlgren (Chalmers) | awaiting |
+| 28 Oct 2026 | Renewvia (Carabajal et al.) | Renewvia (Carabajal et al.) | replied |
+
+Renewvia public links: https://github.com/Renewvia-Energy/impact-analysis; Zenodo 10.5281/zenodo.22149101 (CC BY-SA 4.0); https://github.com/Renewvia-Energy/minigrid-dataset

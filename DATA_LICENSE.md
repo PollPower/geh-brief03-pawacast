@@ -1,0 +1,1 @@
+Files in results/ that are derived from the Renewvia mini-grid dataset (Zenodo 10.5281/zenodo.22149101) are licensed CC BY-SA 4.0, attribution: Renewvia Energy. Everything else is under LICENSE (Apache-2.0).

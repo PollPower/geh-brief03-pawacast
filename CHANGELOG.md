@@ -79,3 +79,4 @@ Times are ET. The line between pre-sprint and sprint work is the git tag `geh202
 - Deck growth card `results/growth_curve_deck_dark.png`: fitted P50 + P10–P90 only (no site lines, no month-12 marker). Frozen slope unchanged.
 - Growth caption: “About 24% growth in year 1, then ~6% a year”. Frozen slope unchanged.
 - Deck chart `results/growth_curve_deck_dark.png` redrawn 1200×700 with larger labels for slide use. Same fitted numbers.
+- Public-release prep: Apache-2.0 LICENSE (copyright 2026 Poll Power Limited), DATA_LICENSE.md, emails stripped from DATA_REQUESTS.md.
