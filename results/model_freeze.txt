@@ -1,0 +1,35 @@
+PawaCast model freeze
+=====================
+Frozen at commit c3df2c84b019cea36c6fb8d7ef4b671e0dffc30d (c3df2c8)
+Date: 2026-10-31
+Do not refit. Scoring must load these coefficients.
+
+Target
+  Unit: gap-filled kWh per active customer meter per month
+  Meters: meterRole == Customer Meter only
+  Active month: at least one observed 15-min slot; drop site-months with <10 active meters
+  Site-level day-one target: median of those months with months_since_power_on in [12, 24]
+  Source: Renewvia (Zenodo 10.5281/zenodo.22149101, CC BY-SA 4.0)
+
+Formula (P50 at month 18)
+  log(kWh) = log(AMDA country) + beta_bld * log(bld_count / 300)
+  AMDA KE 2020 = 3.7 kWh, NG 2020 = 11.0 kWh (BAM 2022 Table 1)
+  REF_BLD = 300 (typical village, documented, not fitted)
+  ridge lambda = 2 (prior beta toward 0)
+  beta_bld = 0.3031258114090143
+
+Interval (P10 / P90)
+  method: oof_sigma
+  P10 = P50 * exp(-Z90 * sigma)
+  P90 = P50 * exp(+Z90 * sigma)
+  Z90 = 1.2816
+  sigma = 0.6994248481546623
+  (standard deviation of leave-one-group-out log(actual/P50) on 18 TRAIN sites)
+  Empirical 10th/90th of those 18 residuals were logged but not used (n=18 is jumpy).
+
+Growth
+  log(kWh) = a_site + slope * (log1p(month) - log1p(18))
+  slope = 0.08463413938171409
+  annualised 0 to 24 months: 14.6%
+  annualised 12 to 24 months: 5.7%
+  TRAIN leave-one-group-out after this freeze: median APE 46.1%, coverage 83% (15/18), P90/P10 6.01, bias +0.03

@@ -37,6 +37,8 @@ Times are ET. The line between pre-sprint and sprint work is the git tag `geh202
 - Range calibration (TRAIN LOGO only): P10/P90 from out-of-fold sigma of log(actual/P50), not in-sample residuals. Empirical P10/P90 of 18 residuals logged but not used (n=18 is jumpy). P50 unchanged. Re-ran CV: PawaCast median APE 46.1%, coverage 83% (15/18), P90/P10 6.01, bias +0.03 (was 46.1% / 72% / 4.93 / +0.03). AMDA 52% / v0 55% / brief 20 kWh 266%.
 
 ### Hours 12–16
+- Model frozen at `c3df2c8` (`results/model_freeze.txt`, `results/model_frozen.json`). P50 formula, β_bld, OOF σ and growth slope must not change after this.
+
 ### Hours 16–24
 ### Hours 24–32 (feature freeze at 32)
 ### Hours 32–48
