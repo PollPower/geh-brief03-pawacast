@@ -68,8 +68,8 @@ def _assert_ok(at: AppTest) -> None:
 def _open_how_tested(at: AppTest) -> None:
     how = _by_label(at.expander, "How tested")
     body = " ".join(m.value for m in how.markdown)
-    assert "TRAIN" in body
-    assert "R-test" in body
+    assert "median error" in body
+    assert "Honest limits" in body
 
 
 def _exercise(at: AppTest) -> AppTest:

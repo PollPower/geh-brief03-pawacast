@@ -75,3 +75,4 @@ Times are ET. The line between pre-sprint and sprint work is the git tag `geh202
 - UI restyle to match pollpower.energy: dark page, grid overlay, frosted nav, JetBrains Mono labels, Sun-border answer card. Map uses Esri World Dark Gray (CartoDB dark_matter now requires an API key). Visual only.
 - Guard live dropped-pin Overture fetch: `PAWACAST_LIVE_PIN` defaults to `0` (notice card, no fetch); `1` keeps the fetch with a 60 s timeout.
 - Header matches pollpower.energy/media (white wordmark, README / ← HOME). Title block and in-app README at `?view=readme`. Space Mono app-wide.
+- Forecast copy: 80% range on the answer card, plain-language How tested / cost / sharing demo, permanent map labels on the three demo sites.

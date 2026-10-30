@@ -134,6 +134,16 @@ def _safe_int(value, default: int) -> int:
     return int(value)
 
 
+def _map_label(name: str) -> str:
+    if str(name).startswith("Maji Moto"):
+        return "Maji Moto"
+    if str(name).startswith("Ewaso Ngiro"):
+        return "Ewaso Ngiro"
+    if str(name).startswith("Narok"):
+        return "Narok town"
+    return str(name)
+
+
 def _safe_float(value, default: float) -> float:
     """float() that treats None/NaN as default."""
     if value is None or pd.isna(value):
@@ -344,10 +354,31 @@ def main():
             tiles="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
             attr="Tiles © Esri",
         )
+        m.get_root().html.add_child(
+            folium.Element(
+                "<style>.pp-map-label{background:transparent!important;border:none!important;}</style>"
+            )
+        )
         for _, r in demo.iterrows():
             folium.CircleMarker(
                 [r.lat, r.lon], radius=8, color=SUN, fill=True, fill_color=SUN,
                 fill_opacity=0.95, popup=r["name"], tooltip=r["name"],
+            ).add_to(m)
+            selected = r.site_id == st.session_state.site_id
+            label_color = SUN if selected else "#FFFFFF"
+            folium.Marker(
+                [r.lat, r.lon],
+                icon=folium.DivIcon(
+                    class_name="pp-map-label",
+                    icon_size=(110, 18),
+                    icon_anchor=(-12, 10),
+                    html=(
+                        f"<div style=\"font-family:'Space Mono',ui-monospace,monospace;"
+                        f"font-size:10px;letter-spacing:.04em;color:{label_color};"
+                        f"background:rgba(0,0,0,.6);padding:2px 6px;white-space:nowrap;"
+                        f"display:inline-block;\">{_map_label(r['name'])}</div>"
+                    ),
+                ),
             ).add_to(m)
         pin_color = PLASMA if st.session_state.site_id == "click" else SUN
         if st.session_state.site_id == "click":
@@ -364,6 +395,8 @@ def main():
         tip = (clicked or {}).get("last_object_clicked_tooltip")
         if tip:
             hit = demo[demo["name"] == tip]
+            if not len(hit):
+                hit = demo[demo["name"].map(_map_label) == tip]
             if len(hit) and hit.iloc[0].site_id != st.session_state.site_id:
                 r = hit.iloc[0]
                 f = feats_demo[feats_demo.site_id == r.site_id].iloc[0].to_dict()
@@ -394,16 +427,17 @@ def main():
         tr6 = 100 * real["summary"]["TRAIN-LOGO"]["6"]["median_ape"]
         rt0 = 100 * real["summary"]["R-test"]["0"]["median_ape"]
         rt6 = 100 * real["summary"]["R-test"]["6"]["median_ape"]
-        st.markdown("<div class='section'>HOW TESTED</div>", unsafe_allow_html=True)
         with st.expander("How tested", expanded=True):
             st.markdown(
-                f"TRAIN leave-one-group-out median error **{tr0:.0f}% → {int(tr6)}%** "
-                f"with 6 months of real readings. Held-out R-test **{rt0:.0f}% → {int(rt6)}%**."
+                f"Tested on 18 real Renewvia mini-grids, each left out in turn: median error "
+                f"{tr0:.0f}%, falling to {int(tr6)}% after 6 months of real meter readings. "
+                f"On 5 sites the model never saw: {rt0:.0f}%, falling to {int(rt6)}%."
             )
             st.markdown(
-                "Honest limits: the day-one model missed the Nigerian test sites; "
-                "the updated range is **overconfident** (R-test coverage 20% after "
-                "6 months). Frozen model is not a guarantee of revenue."
+                "Honest limits: from public data alone, forecasts for the unseen sites ran "
+                "about 2.4× too high, and the Nigerian sites were missed. After updating "
+                "with readings, the range is too narrow on unseen sites (it contained the "
+                "real value 20% of the time). A forecast is not a guarantee of revenue."
             )
 
     with right:
@@ -428,7 +462,7 @@ def main():
             f"<div class='kicker'>EXPECTED DEMAND AT 24 MONTHS</div>"
             f"<div class='big'>{p50_24:.1f}</div>"
             f"<div class='unit'>kWh per household per month at 24 months</div>"
-            f"<div class='range'>most likely {p10_24:.1f} – {p90_24:.1f}</div>"
+            f"<div class='range'>80% range {p10_24:.1f} – {p90_24:.1f}</div>"
             f"<div class='range'>{n} households: {p10_24*n:,.0f} – {p90_24*n:,.0f} kWh/month"
             f" (most likely {p50_24*n:,.0f})</div></div>",
             unsafe_allow_html=True,
@@ -447,10 +481,10 @@ def main():
             f"**USD {cost['b_cost_usd']:,.0f}** all-in "
             f"(USD {cost['b_usd_per_connection']:,.0f}/connection × {cost['households']})."
         )
-        st.caption(
-            f"Secondary — generation sized to forecast demand: {cost['a_kwp']:.1f} kWp × "
-            f"USD {cost['a_usd_per_kwp']:,.0f}/kWp = USD {cost['a_cost_usd']:,.0f}. "
-            f"Do not add (a) and (b); both views use the same capex."
+        st.markdown(
+            f"Solar alone, sized to forecast demand: {cost['a_kwp']:.1f} kWp × "
+            f"USD {cost['a_usd_per_kwp']:,.0f}/kWp ≈ USD {cost['a_cost_usd']:,.0f}. "
+            f"This is part of the all-in figure above, not an extra cost."
         )
 
     st.markdown("<div class='section'>GROWTH AFTER CONNECTION</div>", unsafe_allow_html=True)
@@ -553,11 +587,11 @@ def main():
         b18 = share["blended_month18"]
         f18 = share["frozen_month18"]
         st.caption(
-            f"DEMO ({share['month_label']}): Maji Moto with Olkiramatian-area records "
-            f"({share['olkiramatian_distance_km']:.0f} km, {share['radius_km']:.0f} km radius, "
-            f"{share['n_nearby_records']} Tier 2 records). P50 "
-            f"{f18['p50']:.2f} → {b18['p50']:.2f} kWh/customer. Frozen β not refit. "
-            f"Tier 2 demo built from Renewvia open data (CC BY-SA 4.0)."
+            f"DEMO: Maji Moto at month 18, using {share['n_nearby_records']} Tier 2 records "
+            f"from the Olkiramatian area ({share['olkiramatian_distance_km']:.0f} km away, "
+            f"within an {share['radius_km']:.0f} km radius). Most likely demand moves "
+            f"{f18['p50']:.2f} → {b18['p50']:.2f} kWh per customer. The day-one model itself "
+            f"is not changed. Tier 2 demo records built from Renewvia open data (CC BY-SA 4.0)."
         )
 
     footer()
