@@ -2,7 +2,7 @@
 import time, requests
 import sys
 NAMES = sys.argv[1:] or ["Barsaloi", "Enkoireroi", "Entesopia", "Marti", "Merile", "Namba Koloo", "Olenarau", "Opiroi"]
-H = {"User-Agent": "PawaCast/0.1 (dev@pollpower.energy)"}
+H = {"User-Agent": "PawaCast/0.1 (garrett@pollpower.energy)"}
 for n in NAMES:
     try:
         r = requests.get("https://nominatim.openstreetmap.org/search",
