@@ -1,0 +1,203 @@
+"""Sprint log-linear demand model. TRAIN sites only.
+
+  log(kWh/customer/month) = log(AMDA country baseline)
+                            + β_bld * log(building_count / 300)
+                            + ε
+
+AMDA offset is a prior, not a fitted dummy: a typical village (~300 buildings
+within 1 km) returns the country baseline. β is ridge-shrunk toward 0 (λ = 2).
+One fitted predictor (at most 3 allowed). Mean footprint, grid distance, POIs
+and night lights are omitted: on TRAIN, footprint is collinear with country,
+grid distance is confounded with the Turkana refugee settlements, and POI/NTL
+are near zero. Residual log-sd sets P10/P90 — not the v0 SIGMA.
+
+Source of consumption: Renewvia (Zenodo 10.5281/zenodo.22149101, CC BY-SA 4.0).
+AMDA baselines: BAM 2022 Table 1 (KE 2020 = 3.7, NG 2020 = 11.0).
+"""
+from __future__ import annotations
+
+import math
+from dataclasses import dataclass
+
+import numpy as np
+import pandas as pd
+
+from .prior import Estimate, country_baseline, Z90
+from ..targets.public import REGION
+from ..targets.renewvia import TEST_SITES, load_site_months
+
+ISO = {"Kenya": "KE", "Nigeria": "NG", "KE": "KE", "NG": "NG"}
+WINDOW_LO, WINDOW_HI = 12, 24
+REF_MONTH = 18
+REF_BLD = 300.0          # typical rural village, buildings within 1 km (documented, not fitted)
+RIDGE_LAMBDA = 2.0       # prior β ~ 0; λ chosen a priori, not by the reporting CV
+IMPUTATION_SITES = ("Emereoke", "Kalobeyei Settlement")
+IMPUTATION_THRESHOLD = 0.15
+FEATURES_PATH = (
+    __import__("pathlib").Path(__file__).resolve().parents[2] / "data" / "features" / "renewvia.parquet"
+)
+
+
+def iso_of(country: str) -> str:
+    return ISO[country]
+
+
+def imputation_check(sm: pd.DataFrame) -> pd.DataFrame:
+    """Median |observed_only / gapfilled - 1| per site. TRAIN frame only."""
+    rows = []
+    for site, g in sm.groupby("projectName"):
+        a, b = g.kwh_cust_month, g.kwh_cust_month_observed_only
+        rel = (b - a) / a.replace(0, np.nan)
+        w = g[g.months_since_power_on.between(WINDOW_LO, WINDOW_HI)]
+        win_rel = np.nan
+        if len(w):
+            win_rel = float(w.kwh_cust_month_observed_only.median() / w.kwh_cust_month.median() - 1)
+        rows.append(
+            {
+                "projectName": site,
+                "n_months": int(len(g)),
+                "median_rel": float(rel.median()),
+                "median_abs_rel": float(rel.abs().median()),
+                "window_rel": win_rel,
+                "candidate": site in IMPUTATION_SITES,
+                "use_observed_only": bool(
+                    site in IMPUTATION_SITES and rel.abs().median() > IMPUTATION_THRESHOLD
+                ),
+            }
+        )
+    return pd.DataFrame(rows).sort_values("median_abs_rel", ascending=False).reset_index(drop=True)
+
+
+def apply_imputation(sm: pd.DataFrame, check: pd.DataFrame | None = None) -> tuple[pd.DataFrame, list[str]]:
+    if check is None:
+        check = imputation_check(sm)
+    switched = check.loc[check.use_observed_only, "projectName"].tolist()
+    out = sm.copy()
+    out["kwh_used"] = out.kwh_cust_month
+    if switched:
+        m = out.projectName.isin(switched)
+        out.loc[m, "kwh_used"] = out.loc[m, "kwh_cust_month_observed_only"]
+    return out, switched
+
+
+def site_level_targets(sm: pd.DataFrame) -> pd.DataFrame:
+    """One row per TRAIN site: median kWh in months 12–24, else earliest 12 months."""
+    if sm.empty:
+        raise ValueError("no site-months")
+    bad = set(sm.projectName) & set(TEST_SITES)
+    if bad:
+        raise RuntimeError(f"test sites leaked into site-level targets: {bad}")
+    rows = []
+    for site, g in sm.groupby("projectName"):
+        w = g[g.months_since_power_on.between(WINDOW_LO, WINDOW_HI)]
+        flag = "window_12_24"
+        if w.empty:
+            w = g.sort_values("months_since_power_on").head(12)
+            flag = "earliest_12"
+        iso = iso_of(g.country.iloc[0])
+        amda, amda_src = country_baseline(iso)
+        rows.append(
+            {
+                "site_id": g.site_id.iloc[0],
+                "projectName": site,
+                "country": g.country.iloc[0],
+                "iso": iso,
+                "region": REGION[iso],
+                "group": g.group.iloc[0],
+                "lat": float(g.lat.iloc[0]),
+                "lon": float(g.lon.iloc[0]),
+                "n_window": int(len(w)),
+                "target_flag": flag,
+                "min_month": int(w.months_since_power_on.min()),
+                "max_month": int(w.months_since_power_on.max()),
+                "kwh": float(w.kwh_used.median()),
+                "kwh_gapfilled": float(w.kwh_cust_month.median()),
+                "kwh_observed_only": float(w.kwh_cust_month_observed_only.median()),
+                "amda": amda,
+                "amda_src": amda_src,
+                "n_months_all": int(len(g)),
+            }
+        )
+    return pd.DataFrame(rows).reset_index(drop=True)
+
+
+def attach_features(sites: pd.DataFrame, features: pd.DataFrame | None = None) -> pd.DataFrame:
+    if features is None:
+        features = pd.read_parquet(FEATURES_PATH)
+    keep = [
+        "site_id", "bld_count", "bld_mean_area_m2", "bld_large_count",
+        "poi_count", "ntl_2024_5km", "grid_dist_km",
+    ]
+    out = sites.merge(features[keep], on="site_id", how="left")
+    out["x_log_bld"] = np.log(out.bld_count.clip(lower=1) / REF_BLD)
+    return out
+
+
+def load_train_sites() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, list[str]]:
+    """Site-level TRAIN table, full site-month series, imputation check. Never opens test."""
+    sm = load_site_months(role="train")
+    if (sm.role == "test").any() or set(sm.projectName) & set(TEST_SITES):
+        raise RuntimeError("held-out test consumption leaked into TRAIN load")
+    check = imputation_check(sm)
+    sm, switched = apply_imputation(sm, check)
+    sites = attach_features(site_level_targets(sm))
+    if set(sites.projectName) & set(TEST_SITES):
+        raise RuntimeError("test sites in site-level frame")
+    return sites, sm, check, switched
+
+
+def design_matrix(df: pd.DataFrame) -> np.ndarray:
+    return df.x_log_bld.to_numpy(float).reshape(-1, 1)
+
+
+def ridge_beta(X: np.ndarray, y: np.ndarray, lam: float = RIDGE_LAMBDA) -> np.ndarray:
+    p = X.shape[1]
+    return np.linalg.solve(X.T @ X + lam * np.eye(p), X.T @ y)
+
+
+@dataclass
+class LogLinearFit:
+    beta: np.ndarray
+    sigma: float
+    lam: float = RIDGE_LAMBDA
+    n_sites: int = 0
+    drivers_names: tuple = ("Mapped buildings",)
+
+    def estimate(self, features: dict, country: str = "KE") -> Estimate:
+        iso = iso_of(country)
+        base, src = country_baseline(iso)
+        bld = max(float(features.get("bld_count") or 1), 1.0)
+        x_bld = math.log(bld / REF_BLD)
+        xb = float(math.exp(self.beta[0] * x_bld))
+        p50 = base * xb
+        drivers = [
+            ("Country baseline", 1.0, f"{base:.1f} kWh/customer/month — {src}"),
+            ("Mapped buildings", xb,
+             f"{int(bld)} buildings within 1 km vs a typical village of {int(REF_BLD)}"),
+        ]
+        return Estimate(
+            p10=p50 * math.exp(-Z90 * self.sigma),
+            p50=p50,
+            p90=p50 * math.exp(Z90 * self.sigma),
+            baseline=base,
+            drivers=drivers,
+        )
+
+    def predict_frame(self, df: pd.DataFrame) -> pd.DataFrame:
+        out = df.copy()
+        X = design_matrix(out)
+        log_mu = np.log(out.amda.to_numpy(float)) + X @ self.beta
+        out["p50"] = np.exp(log_mu)
+        out["p10"] = out.p50 * math.exp(-Z90 * self.sigma)
+        out["p90"] = out.p50 * math.exp(Z90 * self.sigma)
+        out["x_mapped_buildings"] = np.exp(self.beta[0] * out.x_log_bld)
+        return out
+
+
+def fit(sites: pd.DataFrame, lam: float = RIDGE_LAMBDA) -> LogLinearFit:
+    X = design_matrix(sites)
+    y = np.log(sites.kwh.to_numpy(float)) - np.log(sites.amda.to_numpy(float))
+    beta = ridge_beta(X, y, lam)
+    resid = y - X @ beta
+    sigma = float(np.std(resid, ddof=1)) if len(resid) > 2 else 0.65
+    return LogLinearFit(beta=beta, sigma=sigma, lam=lam, n_sites=len(sites))

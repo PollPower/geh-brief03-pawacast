@@ -26,7 +26,14 @@ Times are ET. The line between pre-sprint and sprint work is the git tag `geh202
 - Built TRAIN site-months (flag off): sealed Balep, Bendeghe-Afi, Opu, Kapelbok, Ozuzu (files not opened); skipped Emakalakala (no clean readings file). 18 train sites, 871 site-months → `data/targets/renewvia_site_months_train.parquet`. Summary in `results/renewvia_train_summary.csv`. Test parquet was not created.
 - Cached site features for all 24 Renewvia sites (`data/features/renewvia.parquet`; coordinates only, including test) and reused the 3 demo-site cache (`data/features/demo_sites.parquet`). Preview in `results/renewvia_features_preview.csv`.
 
-### Hours 05–16
+### Hours 05–12
+- Imputation check (TRAIN): Emereoke median |observed_only/gapfilled − 1| = 44%, Kalobeyei Settlement 58% (both >15%). Those two sites use `kwh_cust_month_observed_only` for modelling. Logged in `results/cv_train.json`.
+- Day-one target: median kWh/customer in months 12–24 after power-on. All 18 TRAIN sites had that window (none needed the earliest-12 fallback).
+- Log-linear model with AMDA country offset (KE 3.7 / NG 11.0) and one fitted predictor, log(building count / 300), ridge λ=2. Footprint, grid distance, POIs and night lights dropped (weak or confounded on TRAIN). P10/P90 from residual log-sd (σ≈0.72), not v0 SIGMA.
+- Leave-one-group-out CV over 13 TRAIN groups (`results/cv_train.json`, `results/cv_train_sites.csv`): PawaCast median APE 45%, coverage 83% (15/18), P90/P10 6.3, bias +0.08. AMDA 52% / 78% / 5.3 / +0.25; v0 55% / 56% / 5.3 / −0.01; brief 20 kWh 282%. Not frozen. Test sites not used.
+- Growth: site intercept + common log1p(month) slope on TRAIN site-months. Common within-site growth ≈7%/year (near Blodgett 8%); 12→24 months only ≈3%. Published 8% / 21% / 47% all sit inside the wide per-site slope band. Figure `results/growth_curve.png`.
+
+### Hours 12–16
 ### Hours 16–24
 ### Hours 24–32 (feature freeze at 32)
 ### Hours 32–48

@@ -1,0 +1,135 @@
+{
+  "note": "TRAIN leave-one-group-out only. Not an R-test / set-B score. Model not frozen.",
+  "n_sites": 18,
+  "n_groups": 13,
+  "sealed_test_sites": [
+    "Balep",
+    "Bendeghe-Afi",
+    "Kapelbok",
+    "Opu",
+    "Ozuzu"
+  ],
+  "imputation": {
+    "threshold": 0.15,
+    "candidates": [
+      "Emereoke",
+      "Kalobeyei Settlement"
+    ],
+    "switched_to_observed_only": [
+      "Kalobeyei Settlement",
+      "Emereoke"
+    ],
+    "per_site": [
+      {
+        "projectName": "Kalobeyei Settlement",
+        "n_months": 67,
+        "median_rel": -0.5766633651898618,
+        "median_abs_rel": 0.5766633651898618,
+        "window_rel": -0.221542801257409,
+        "candidate": true,
+        "use_observed_only": true
+      },
+      {
+        "projectName": "Emereoke",
+        "n_months": 33,
+        "median_rel": -0.43769868679149787,
+        "median_abs_rel": 0.43769868679149787,
+        "window_rel": -0.5886830540175787,
+        "candidate": true,
+        "use_observed_only": true
+      }
+    ]
+  },
+  "predictors": [
+    "AMDA country baseline (offset / prior)",
+    "log(building count / 300)"
+  ],
+  "ridge_lambda": 2.0,
+  "beta_log_bld": 0.2624593759660141,
+  "sigma_log_residual": 0.7174776742755131,
+  "range_width_from_sigma": 6.290488777090883,
+  "metrics": {
+    "pawacast": {
+      "median_ape": 0.4526713282814505,
+      "coverage_p10_p90": 0.8333333333333334,
+      "range_width": 6.29979615555092,
+      "bias": 0.07912563587552338,
+      "n": 18
+    },
+    "amda": {
+      "median_ape": 0.5202799914926033,
+      "coverage_p10_p90": 0.7777777777777778,
+      "range_width": 5.2913848605851825,
+      "bias": 0.2503699609685657,
+      "n": 18
+    },
+    "v0": {
+      "median_ape": 0.5547604256426245,
+      "coverage_p10_p90": 0.5555555555555556,
+      "range_width": 5.2913848605851825,
+      "bias": -0.007369961176611636,
+      "n": 18
+    },
+    "brief20": {
+      "median_ape": 2.8234987772202946,
+      "coverage_p10_p90": 0.2777777777777778,
+      "range_width": 5.2913848605851825,
+      "bias": 1.3347225056100187,
+      "n": 18
+    }
+  },
+  "growth": {
+    "slope": 0.041451766905915836,
+    "intercept_log_at_18": 1.632662114656274,
+    "sigma_within": 0.4899995193715593,
+    "tau_site": 0.6141793136607466,
+    "n_sites": 18,
+    "n_rows": 870,
+    "site_slope_p10": -0.6158236847914814,
+    "site_slope_p50": 0.21898866764393426,
+    "site_slope_p90": 0.5111569109117113,
+    "annual_0_12": 0.11217958811378104,
+    "annual_12_24": 0.027477128219948188,
+    "annual_0_24": 0.06898975170952526,
+    "published_rates": [
+      {
+        "source": "Blodgett 2017 (8 KE sites)",
+        "observation": "8% per year over first two years",
+        "annual_growth": 0.08,
+        "inside_train_p10_p90": true
+      },
+      {
+        "source": "Wassie & Ahlgren 2024 (Tum, ET)",
+        "observation": "+90% daily consumption over 20 months",
+        "annual_growth": 0.46977941499371334,
+        "inside_train_p10_p90": true
+      },
+      {
+        "source": "CrossBoundary tariff pilot (TZ, high users)",
+        "observation": "10.1 -> 14.7 kWh over two years",
+        "annual_growth": 0.2064184782049947,
+        "inside_train_p10_p90": true
+      }
+    ],
+    "annual_band_0_24_p10_p50_p90": [
+      -0.6288429481793951,
+      0.42254662616217975,
+      1.2765822647063163
+    ]
+  },
+  "example_drivers": [
+    {
+      "name": "Country baseline",
+      "multiplier": 1.0,
+      "reason": "11.0 kWh/customer/month \u2014 AMDA NG 2020 average (AMDA BAM 2022, Table 1)"
+    },
+    {
+      "name": "Mapped buildings",
+      "multiplier": 1.1300489991443374,
+      "reason": "478 buildings within 1 km vs a typical village of 300"
+    }
+  ],
+  "target_flags": {
+    "window_12_24": 18
+  }
+}
