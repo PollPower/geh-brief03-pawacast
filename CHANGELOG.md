@@ -23,6 +23,7 @@ Times are ET. The line between pre-sprint and sprint work is the git tag `geh202
 - Confirmed `geh2026-sprint-start` on origin (`e61ed0ac`). Inspected TRAIN-only clean-readings schemas (Akipelai, Lomekwi, Olkiramatian) plus customers/minigridprojects; did not open test-site consumption files (Balep, Bendeghe-Afi, Opu, Ozuzu, Kapelbok).
 - Added `pawacast/targets/renewvia.py`: DuckDB site-month aggregator with build-time seal (test readings never opened unless `PAWACAST_FINAL_EVAL=1`), loader guard, partial-month kWh/day × 30.44, observed-slot active-meter rule, `kwh_cust_month_observed_only`. Train output `data/targets/renewvia_site_months_train.parquet`.
 - Added `tests/test_renewvia_seal.py` proving the loader raises `HeldOutError` for test sites without the flag, and that the builder does not list test readings files. `duckdb` and `pytest` added to `requirements.txt`.
+- Built TRAIN site-months (flag off): sealed Balep, Bendeghe-Afi, Opu, Kapelbok, Ozuzu (files not opened); skipped Emakalakala (no clean readings file). 18 train sites, 871 site-months → `data/targets/renewvia_site_months_train.parquet`. Summary in `results/renewvia_train_summary.csv`. Test parquet was not created.
 
 ### Hours 05–16
 ### Hours 16–24
