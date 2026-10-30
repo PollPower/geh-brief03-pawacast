@@ -32,6 +32,21 @@ SUN, FLARE, PLASMA, ASH = "#FFD93D", "#FF6B35", "#FF3366", "#0D0D0D"
 FREEZE = "c3df2c8"
 # Ash #0D0D0D on white ~19:1; white on Ash ~19:1; Sun #FFD93D on Ash ~13:1. WCAG AA.
 
+
+def _safe_int(value, default: int) -> int:
+    """int() that treats None/NaN as default. NaN is truthy, so `x or default` is not safe."""
+    if value is None or pd.isna(value):
+        return int(default)
+    return int(value)
+
+
+def _safe_float(value, default: float) -> float:
+    """float() that treats None/NaN as default."""
+    if value is None or pd.isna(value):
+        return float(default)
+    return float(value)
+
+
 st.set_page_config(page_title="PawaCast · PollPower", layout="wide", page_icon="⚡")
 
 CSS = f"""
@@ -200,7 +215,7 @@ def waterfall_rows(est18, p50_24: float, k24: float) -> pd.DataFrame:
 
 
 def html_report(name, country, lat, lon, n, est, site_p10, site_p50, site_p90, feats, ev) -> str:
-    bld = int(feats.get("bld_count") or 0)
+    bld = _safe_int(feats.get("bld_count"), 0)
     h = ev["headline"]
     drivers = "".join(
         f"<tr><td>{n_}</td><td class='mono'>×{m:.2f}</td><td>{why}</td></tr>"
@@ -238,10 +253,10 @@ td {{ padding: 4px 8px; border-bottom: 1px solid #eee; }}
 def apply_site(site_id: str, name: str, lat: float, lon: float, country: str, customers, feats: dict):
     st.session_state.site_id = site_id
     st.session_state.name = name
-    st.session_state.lat = float(lat)
-    st.session_state.lon = float(lon)
-    st.session_state.country = country
-    st.session_state.customers = int(customers or 100)
+    st.session_state.lat = _safe_float(lat, 0.0)
+    st.session_state.lon = _safe_float(lon, 0.0)
+    st.session_state.country = country if isinstance(country, str) and country else "KE"
+    st.session_state.customers = _safe_int(customers, 100)
     st.session_state.feats = feats
     st.session_state.readings = []
 
@@ -322,17 +337,19 @@ def main():
         st.markdown("<div class='section'>SITE</div>", unsafe_allow_html=True)
         st.markdown(f"<h2 class='bebas' style='margin-top:0'>{st.session_state.name}</h2>", unsafe_allow_html=True)
         st.caption(f"{st.session_state.lat:.4f}, {st.session_state.lon:.4f} · "
-                   f"{float(st.session_state.feats.get('grid_dist_km') or 0):.1f} km to grid")
+                   f"{_safe_float(st.session_state.feats.get('grid_dist_km'), 0):.1f} km to grid")
         c1, c2 = st.columns(2)
-        st.session_state.customers = c1.number_input("Customers", min_value=10, max_value=5000,
-                                                     value=int(st.session_state.customers), step=10)
+        st.session_state.customers = c1.number_input(
+            "Customers", min_value=10, max_value=5000,
+            value=_safe_int(st.session_state.customers, 100), step=10,
+        )
         st.session_state.country = c2.selectbox("Country", ["KE", "NG", "ET"],
                                                 index=["KE", "NG", "ET"].index(st.session_state.country)
                                                 if st.session_state.country in ("KE", "NG", "ET") else 0)
         est18 = model.estimate(st.session_state.feats, st.session_state.country)
         k24 = float(observed_multiplier(24, slope))
         p10_24, p50_24, p90_24 = est18.p10 * k24, est18.p50 * k24, est18.p90 * k24
-        n = int(st.session_state.customers)
+        n = _safe_int(st.session_state.customers, 100)
         st.markdown(
             f"<div class='answer'>"
             f"<div class='kicker'>EXPECTED DEMAND AT 24 MONTHS</div>"
