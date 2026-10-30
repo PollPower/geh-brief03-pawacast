@@ -78,3 +78,4 @@ Times are ET. The line between pre-sprint and sprint work is the git tag `geh202
 - Forecast copy: 80% range on the answer card, plain-language How tested / cost / sharing demo, permanent map labels on the three demo sites.
 - Deck growth card `results/growth_curve_deck_dark.png`: fitted P50 + P10–P90 only (no site lines, no month-12 marker). Frozen slope unchanged.
 - Growth caption: “About 24% growth in year 1, then ~6% a year”. Frozen slope unchanged.
+- Deck chart `results/growth_curve_deck_dark.png` redrawn 1200×700 with larger labels for slide use. Same fitted numbers.
