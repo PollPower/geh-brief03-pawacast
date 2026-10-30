@@ -490,7 +490,7 @@ def main():
     st.markdown("<div class='section'>GROWTH AFTER CONNECTION</div>", unsafe_allow_html=True)
     prior_c = curve_frame(est18.p10, est18.p50, est18.p90, slope)
     st.altair_chart(growth_chart(prior_c), use_container_width=True)
-    st.caption("Most sites flat after year 1 (~7%/yr)")
+    st.caption("About 24% growth in year 1, then ~6% a year")
 
     st.markdown("<div class='section'>METERS CORRECT</div>", unsafe_allow_html=True)
     st.markdown("<span class='sim'>SIMULATED</span> readings for the demo — not signed PollPower meters.",
