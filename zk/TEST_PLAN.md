@@ -1,12 +1,19 @@
-# Compact circuit test plan (not run — compiler missing)
+# Compact circuit test plan
 
-Install the Midnight Compact toolchain (`compactc`, matching `pragma language_version` in `record.compact`). Then:
+The circuit compiles with `compactc` 0.30.0 (language 0.22.0, runtime 0.15.0).
+Build command, output layout, and the offline fixture harness are in
+`zk/COMPILE.md`. Do not deploy the compiled artifact without an explicit ask.
 
 ```
-compactc compile zk/record.compact
+compactc zk/record.compact zk/build/
 ```
 
-If the pragma is rejected, bump it to the installed language version. Do not deploy the compiled artifact.
+> **k_min raised to 25.** The case descriptions below still use the old k=10
+> wording (n=10 accepts, n=9 rejects); the live circuit uses k_min=25 so the
+> "accept" boundary is n=25 and the "just-below" rejection is n=24. Fixtures
+> `valid_n10.json` and `n9_should_fail.json` were updated to the new floor
+> but keep their historical filenames. Treat case numbers below as logical
+> intent (accept at k_min, reject just below) rather than literal n values.
 
 ## Cases
 

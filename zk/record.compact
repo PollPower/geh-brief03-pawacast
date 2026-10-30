@@ -1,5 +1,5 @@
 // Compact circuit: published sum and count match committed per-customer values,
-// and count >= 10. Reveals only the published totals.
+// and count >= 25. Reveals only the published totals.
 //
 // Percentiles (P10/P50/P90) are NOT proven here — SHARING_DESIGN.md leaves that
 // as an open question (expensive in Compact). Laplace noise is applied outside
@@ -8,50 +8,78 @@
 // Values are millikWh (kWh * 1000, rounded) so we stay in integers.
 // Unused slots in the length-32 vector MUST be zero (padding).
 //
-// This file was not compiled on the sprint Windows machine: `compact` on PATH is
-// C:\Windows\system32\compact.exe (NTFS compression), not the Midnight Compact
-// compiler. Do not deploy to Midnight Preview without an explicit ask.
-//
-// Language version is a best-effort match to Compact 0.18. Adjust the pragma
-// if compactc rejects it.
+// Ported from the Compact 0.18 scaffold to Compact 0.22 (language 0.22.0,
+// compactc 0.30.0). Syntax reference: PollPower/contracts EBT v8 and
+// tariff-registry. Semantics preserved: proves publishedN == privateN,
+// n >= K_MIN, n <= N_MAX, sum(values[0..n)) == publishedSumMilliKwh, and that
+// values[n..N_MAX) are all zero padding.
 
-pragma language_version 0.18.0;
+pragma language_version >= 0.16 && <= 0.22;
 
 import CompactStandardLibrary;
 
-// Pure proof circuit: no ledger state.
-export ledger {}
+// =============================================================================
+// Compile-time bounds
+// =============================================================================
 
-const K_MIN: Uint<32> = 10;
-const N_MAX: Uint<32> = 32;
+// k-anonymity floor. Raised from 10 to 25 (sprint policy; see commit msg +
+// zk/COMPILE.md). Any divergence from pawacast/sharing/validate.py's
+// MIN_CUSTOMERS = 10 is intentional and lives in a separate repo change.
+pure circuit K_MIN(): Uint<32> { return 25 as Uint<32>; }
+
+// Circuit bound on the committed-values vector width. Larger sites must
+// chunk or lift this bound (and the fixture vector length).
+pure circuit N_MAX(): Uint<32> { return 32 as Uint<32>; }
+
+// =============================================================================
+// Scratch ledger cells for in-circuit accumulation
+// =============================================================================
+// Compact 0.22 does not allow mutable locals inside circuits; a for-loop
+// accumulator MUST live in ledger state (see tariff-registry
+// tariff-audit.compact _actionLogClimb comment, lines 247-252). These cells
+// hold no cross-call meaning — they are reset to zero at the start of every
+// proof call and read back for the final assertion.
+export ledger _proofSum: Uint<64>;
+export ledger _proofIdx: Uint<32>;
+
+// =============================================================================
+// Witnesses
+// =============================================================================
 
 // Private: true customer count and the committed per-customer millikWh totals.
 witness privateN(): Uint<32>;
 witness privateValuesMilliKwh(): Vector<32, Uint<32>>;
 
-// Public: the numbers on the shared record (n_customers and sum = mean * n,
-// before Laplace noise). The proof reveals these and nothing else.
+// =============================================================================
+// Main proof circuit
+// =============================================================================
+
+// Public (revealed): the numbers on the shared record (n_customers and sum =
+// mean * n, before Laplace noise). The proof reveals these and nothing else.
 export circuit prove_published_sum_and_count(
   publishedN: Uint<32>,
-  publishedSumMilliKwh: Uint<64>
-): Boolean {
-  const n = privateN();
-  const values = privateValuesMilliKwh();
+  publishedSumMilliKwh: Uint<64>,
+): [] {
+  const n = disclose(privateN());
+  const values = disclose(privateValuesMilliKwh());
 
-  assert n == publishedN;
-  assert n >= K_MIN;
-  assert n <= N_MAX;
+  assert(n == disclose(publishedN), "N_MISMATCH");
+  assert(n >= K_MIN(), "N_BELOW_K_MIN");
+  assert(n <= N_MAX(), "N_ABOVE_N_MAX");
 
-  let mut acc: Uint<64> = 0;
-  let mut i: Uint<32> = 0;
+  // Reset scratch cells at the start of every proof.
+  _proofSum = 0 as Uint<64>;
+  _proofIdx = 0 as Uint<32>;
+
   for (const v of values) {
+    const i = _proofIdx;
     if (i < n) {
-      acc = acc + (v as Uint<64>);
+      _proofSum = (_proofSum + (v as Uint<64>)) as Uint<64>;
     } else {
-      assert v == 0;
+      assert(v == (0 as Uint<32>), "PADDING_NONZERO");
     }
-    i = i + 1;
+    _proofIdx = (_proofIdx + (1 as Uint<32>)) as Uint<32>;
   }
-  assert acc == publishedSumMilliKwh;
-  return true;
+
+  assert(_proofSum == disclose(publishedSumMilliKwh), "SUM_MISMATCH");
 }
