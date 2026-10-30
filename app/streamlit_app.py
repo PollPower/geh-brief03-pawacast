@@ -15,10 +15,13 @@ import streamlit as st
 from streamlit_folium import st_folium
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+APP_DIR = pathlib.Path(__file__).resolve().parent
 import sys
 
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+if str(APP_DIR) not in sys.path:
+    sys.path.insert(0, str(APP_DIR))
 
 from pawacast.cost_card import maji_moto_cost
 from pawacast.features import build_features
@@ -27,10 +30,11 @@ from pawacast.model.loglinear import load_frozen
 from pawacast.model.update_v2 import update_v2
 from pawacast.sharing.ingest import maji_moto_sharing_demo
 from pawacast.targets.demo import DEMO_SITES
+from theme import ASH, FLARE, PLASMA, SUN, footer, inject
 
-SUN, FLARE, PLASMA, ASH = "#FFD93D", "#FF6B35", "#FF3366", "#0D0D0D"
 FREEZE = "c3df2c8"
-# Ash #0D0D0D on white ~19:1; white on Ash ~19:1; Sun #FFD93D on Ash ~13:1. WCAG AA.
+# Page #0A0A0A; body #CCCCCC ≥4.5:1; ghost #888 on page ~5.6:1 (small labels);
+# Sun #FFD93D on page ~12:1; white on answer card ~19:1.
 
 
 def _safe_int(value, default: int) -> int:
@@ -47,57 +51,7 @@ def _safe_float(value, default: float) -> float:
     return float(value)
 
 
-st.set_page_config(page_title="PawaCast · PollPower", layout="wide", page_icon="⚡")
-
-CSS = f"""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600&family=Space+Mono:wght@400;700&display=swap');
-html, body, [class*="css"] {{ font-family: Inter, sans-serif; color: {ASH}; }}
-h1, h2, h3, .bebas {{ font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.04em; }}
-.mono {{ font-family: 'Space Mono', monospace; color: {ASH}; }}
-.section {{
-  font-family: 'Space Mono', monospace;
-  color: {SUN} !important;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-size: 0.78rem;
-  background: {ASH};
-  display: inline-block;
-  padding: 0.22rem 0.55rem;
-  margin: 0.7rem 0 0.4rem 0;
-}}
-.sources {{
-  font-family: 'Space Mono', monospace;
-  font-size: 0.72rem;
-  color: #ffffff;
-  background: {ASH};
-  margin-top: 1.4rem;
-  padding: 0.65rem 0.75rem;
-}}
-.pp-bar {{
-  background: linear-gradient(90deg, {SUN} 0%, {FLARE} 55%, {PLASMA} 100%);
-  padding: 0.85rem 1.2rem; margin: -1rem -1rem 1rem -1rem; color: {ASH};
-}}
-.pp-bar h1 {{ margin: 0; font-size: 2.1rem; color: {ASH}; }}
-.pp-bar .sub {{ font-family: 'Space Mono', monospace; font-size: 0.78rem; color: {ASH}; }}
-.answer {{
-  background: {ASH}; color: #ffffff; border-left: 6px solid {SUN};
-  padding: 0.95rem 1.05rem; margin: 0.4rem 0 1rem 0;
-}}
-.answer, .answer * {{ color: #ffffff !important; }}
-.answer .kicker {{ font-family: 'Space Mono', monospace; font-size: 0.72rem;
-  letter-spacing: 0.08em; color: {SUN} !important; margin-bottom: 0.35rem; }}
-.answer .big {{ font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem;
-  line-height: 0.95; color: {SUN} !important; }}
-.answer .unit {{ font-size: 1.02rem; margin: 0.15rem 0 0.45rem 0; color: #ffffff !important; }}
-.answer .range {{ font-family: 'Space Mono', monospace; font-size: 0.98rem;
-  color: #ffffff !important; margin-top: 0.2rem; }}
-.sim {{ background: {SUN}; color: {ASH}; font-family: 'Space Mono', monospace;
-       font-size: 0.72rem; padding: 0.1rem 0.4rem; }}
-.how {{ background: #f4f4f4; padding: 0.75rem 0.9rem; font-size: 0.88rem; }}
-footer {{ font-size: 0.78rem; color: #555; }}
-</style>
-"""
+st.set_page_config(page_title="PawaCast · Poll Power", layout="wide", page_icon="⚡")
 
 
 @st.cache_resource
@@ -152,7 +106,9 @@ def curve_frame(p10, p50, p90, slope, months=range(0, 25)) -> pd.DataFrame:
     return pd.DataFrame({"month": m, "p10": p10 * mult, "p50": p50 * mult, "p90": p90 * mult})
 
 
-def growth_chart(frame: pd.DataFrame, band_color: str, line_color: str) -> alt.Chart:
+def growth_chart(
+    frame: pd.DataFrame, band_color: str | None = None, line_color: str | None = None
+) -> alt.Chart:
     d = frame.copy()
     d["month"] = d["month"].astype(int)
     x = alt.X(
@@ -163,17 +119,19 @@ def growth_chart(frame: pd.DataFrame, band_color: str, line_color: str) -> alt.C
             labelAngle=0,
         ),
     )
+    band_c = band_color or FLARE
+    line_c = line_color or SUN
     band = (
         alt.Chart(d)
-        .mark_area(opacity=0.22, color=band_color)
+        .mark_area(opacity=0.25, color=band_c)
         .encode(x=x, y=alt.Y("p10:Q", title="kWh / household / month"), y2="p90:Q")
     )
     line = (
         alt.Chart(d)
-        .mark_line(color=line_color, strokeWidth=2)
+        .mark_line(color=line_c, strokeWidth=2)
         .encode(x=x, y="p50:Q")
     )
-    return alt.layer(band, line).properties(height=200).configure_view(strokeWidth=0)
+    return alt.layer(band, line).properties(height=200).configure_view(strokeWidth=0, fill="transparent")
 
 
 def waterfall_rows(est18, p50_24: float, k24: float) -> pd.DataFrame:
@@ -271,12 +229,7 @@ def init_state():
 
 
 def main():
-    st.markdown(CSS, unsafe_allow_html=True)
-    st.markdown(
-        '<div class="pp-bar"><h1>POLL POWER · PAWACAST</h1>'
-        '<div class="sub">Demand before you build</div></div>',
-        unsafe_allow_html=True,
-    )
+    inject()
     init_state()
     model, frozen = _model()
     cal = _cal(_mtime("meter_update_v2.json"))
@@ -288,15 +241,29 @@ def main():
 
     left, right = st.columns([1.15, 1])
     with left:
-        m = folium.Map(location=[-1.22, 35.78], zoom_start=9, tiles="OpenStreetMap")
+        # CartoDB dark_matter now watermarks without an API key (folium 0.20+).
+        # Esri World Dark Gray is the free dark basemap used instead.
+        m = folium.Map(
+            location=[-1.22, 35.78],
+            zoom_start=9,
+            tiles="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+            attr="Tiles © Esri",
+        )
         for _, r in demo.iterrows():
             folium.CircleMarker(
-                [r.lat, r.lon], radius=8, color=PLASMA, fill=True, fill_color=SUN,
+                [r.lat, r.lon], radius=8, color=SUN, fill=True, fill_color=SUN,
                 fill_opacity=0.95, popup=r["name"], tooltip=r["name"],
             ).add_to(m)
+        pin_color = PLASMA if st.session_state.site_id == "click" else SUN
+        if st.session_state.site_id == "click":
+            folium.CircleMarker(
+                [st.session_state.lat, st.session_state.lon], radius=8,
+                color=PLASMA, fill=True, fill_color=PLASMA, fill_opacity=0.95,
+                popup="Dropped pin", tooltip="Dropped pin",
+            ).add_to(m)
         folium.CircleMarker(
-            [st.session_state.lat, st.session_state.lon], radius=11,
-            color=ASH, fill=False, weight=2,
+            [st.session_state.lat, st.session_state.lon], radius=12,
+            color=pin_color, fill=False, weight=2,
         ).add_to(m)
         clicked = st_folium(m, height=420, width=None, returned_objects=["last_clicked", "last_object_clicked_tooltip"])
         tip = (clicked or {}).get("last_object_clicked_tooltip")
@@ -382,7 +349,7 @@ def main():
 
     st.markdown("<div class='section'>GROWTH AFTER CONNECTION</div>", unsafe_allow_html=True)
     prior_c = curve_frame(est18.p10, est18.p50, est18.p90, slope)
-    st.altair_chart(growth_chart(prior_c, "#cccccc", FLARE), use_container_width=True)
+    st.altair_chart(growth_chart(prior_c), use_container_width=True)
     st.caption("Most sites flat after year 1 (~7%/yr)")
 
     st.markdown("<div class='section'>METERS CORRECT</div>", unsafe_allow_html=True)
@@ -392,7 +359,7 @@ def main():
     month = a.number_input("month", min_value=0, max_value=48, value=3, step=1)
     kwh = b.number_input("kWh / household", min_value=0.1, max_value=80.0, value=4.2, step=0.1)
     readings = st.session_state.readings
-    if c.button("Add"):
+    if c.button("Add", type="primary"):
         st.session_state.readings = list(readings) + [(float(month), float(kwh))]
         st.rerun()
     if st.session_state.readings:
@@ -402,11 +369,11 @@ def main():
         with before:
             st.markdown("**Forecast**")
             st.write(f"{p50_24:.1f} kWh  ·  most likely {p10_24:.1f} – {p90_24:.1f}")
-            st.altair_chart(growth_chart(prior_c, "#bbbbbb", "#888888"), use_container_width=True)
+            st.altair_chart(growth_chart(prior_c), use_container_width=True)
         with after:
             st.markdown("**After SIMULATED readings**")
             st.write(f"{u['p50']:.1f} kWh  ·  most likely {u['p10']:.1f} – {u['p90']:.1f}")
-            st.altair_chart(growth_chart(post_c, FLARE, FLARE), use_container_width=True)
+            st.altair_chart(growth_chart(post_c, FLARE, PLASMA), use_container_width=True)
         wr = (u["p90"] / u["p10"]) / (est18.p90 / est18.p10)
         st.write(
             f"After **{len(st.session_state.readings)}** SIMULATED month(s) the range is "
@@ -487,12 +454,7 @@ def main():
             f"Tier 2 demo built from Renewvia open data (CC BY-SA 4.0)."
         )
 
-    st.markdown(
-        f"<div class='sources'>Data: Renewvia (Zenodo 10.5281/zenodo.22149101, "
-        f"CC BY-SA 4.0) · AMDA · Overture Maps · VIIRS · GridFinder · "
-        f"Model v1 frozen {FREEZE}</div>",
-        unsafe_allow_html=True,
-    )
+    footer()
 
 
 if __name__ == "__main__":
