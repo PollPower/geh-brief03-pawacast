@@ -44,6 +44,7 @@ Times are ET. The line between pre-sprint and sprint work is the git tag `geh202
 - Set A (seen, continuity): PawaCast median APE 37.4%, coverage 83% (5/6), bias +0.25. AMDA 47% / 83%; v0 60% / 83%.
 - Country check (6 unlocated published sites): PawaCast without coordinates equals AMDA; median APE vs those published figures 61%.
 - Artifacts: `results/eval_final.json`, `results/eval_sites.csv`, `results/eval_ranges.png`. Model not changed after the score.
+- Declared the real-meter update protocol in EVAL_PLAN Deviations (OBS_SIGMA = 0.30, frozen P50/σ/growth, k = 0/1/3/6, R-test + TRAIN-LOGO). Not yet run.
 
 ### Hours 16–24
 ### Hours 24–32 (feature freeze at 32)

@@ -95,3 +95,17 @@ The clean product does **not** invent energy. It diffs the meter’s cumulative 
 **CV before the change** (observed_only on those two sites): PawaCast median APE 45.3%, coverage 83% (15/18), P90/P10 6.3, bias +0.08. Emereoke 12–24 month actual 2.09 kWh.
 
 **CV after** (gap-filled for all 18): PawaCast median APE 46.1%, coverage 72% (13/18), P90/P10 4.93, bias +0.03. Emereoke 12–24 month actual 5.09 kWh. AMDA 52.0% / v0 55.5% / brief 20 kWh 266%. Model not frozen.
+
+### 31 Oct 2026 — meter update on real Renewvia readings (declared before running)
+
+The frozen day-one model and the one-time held-out score are not revisited. This block tests “forecast first, meters correct” on **real** site-month kWh (Renewvia, gap-filled), not simulated readings.
+
+**Protocol (fixed before looking at update results):**
+
+- Prior: frozen day-one P50 at month 18, σ = 0.6994248481546623 (OOF log residual sd). R-test uses the frozen full-TRAIN P50. Each TRAIN site uses its leave-one-group-out P50 from `results/cv_train_sites.csv` (the out-of-fold fit), not the full-TRAIN fit.
+- Readings: the first k chronological site-months in the existing aggregate (`month` ascending), for k ∈ {1, 3, 6}. These are already restricted to ≥10 active customer meters and ≥20 observed days. k = 0 is the day-one forecast with no meters.
+- Update: `pawacast/model/update.py` conjugate Normal update. **OBS_SIGMA stays 0.30** (pre-sprint; not tuned). Each reading is mapped to month 18 with the frozen growth slope `log1p(m) − log1p(18)`, slope = 0.08463413938171409, then passed to `update(..., g=0)` so the old 18% compound-annual growth is not applied on top.
+- Target: the same months 12–24 median kWh/customer already used for day-one (R-test from the frozen score; TRAIN from LOGO). Posterior P50 is at month 18.
+- Metrics: median APE of P50 and median P90/P10 width, for k = 0, 1, 3, 6, separately on R-test (n=5) and TRAIN-LOGO (n=18).
+- Outputs: `results/meter_update_real.json`, `results/meter_update_real.png`. Chart labelled REAL meter data (Renewvia).
+- No change to frozen β, σ, growth slope, or the headline R-test table.
