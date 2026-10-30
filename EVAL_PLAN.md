@@ -109,3 +109,13 @@ The frozen day-one model and the one-time held-out score are not revisited. This
 - Metrics: median APE of P50 and median P90/P10 width, for k = 0, 1, 3, 6, separately on R-test (n=5) and TRAIN-LOGO (n=18).
 - Outputs: `results/meter_update_real.json`, `results/meter_update_real.png`. Chart labelled REAL meter data (Renewvia).
 - No change to frozen β, σ, growth slope, or the headline R-test table.
+
+### 31 Oct 2026 — optional v2 country intercepts (post-hoc, does not replace headline)
+
+After the frozen score, a separate model added country intercepts α_KE, α_NG on top of log(AMDA), ridge-shrunk toward 0 (λ=2, same as v1 β). TRAIN LOGO and a labelled R-test score only. R-test had already been seen.
+
+**TRAIN LOGO:** v2 median APE 50.2%, coverage 83% (15/18), P90/P10 6.23, bias −0.04. Frozen v1 was 46.1% / 83% / 6.01 / +0.03. v2 is worse on the pre-declared TRAIN criterion, so it would not have been chosen before seeing R-test.
+
+**R-test (post-hoc, test already seen):** v2 median APE 79.6%, coverage 80% (4/5), width 6.23, bias +0.59. Frozen headline remains 136% / 60% / 6.01 / +0.86. The NG intercept (×0.76) fits low TRAIN Nigerian sites and then helps the low Nigerian test sites; that comparison is not a valid selection result.
+
+Saved `results/v2_posthoc.json`. Frozen model and `results/eval_final.json` unchanged.
