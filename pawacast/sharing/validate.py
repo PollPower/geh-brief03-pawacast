@@ -121,7 +121,7 @@ def validate_record(record: Any) -> dict:
         raise RecordError("month out of range")
 
     age = _int(record, "months_since_power_on")
-    if age < 0 or age > 240:
+    if age < 0 or age > 360:
         raise RecordError("months_since_power_on out of range")
 
     n = _int(record, "n_customers")

@@ -357,17 +357,18 @@ def _site_months(mm: pd.DataFrame, days: pd.DataFrame, job: SiteJob, n_registry:
     return pd.DataFrame(rows)
 
 
-def process_site(job: SiteJob) -> pd.DataFrame:
+def load_meter_months(job: SiteJob) -> tuple[pd.DataFrame, pd.DataFrame, int]:
+    """Per-customer month totals for one site. Test jobs raise unless the final-eval flag is on."""
     if job.role == "test" and not final_eval_enabled():
         raise HeldOutError(f"refusing to process test site {job.project_name}")
     if not job.files:
         print(f"skip {job.project_name}: no sparkmeterreadings_clean file", flush=True)
-        return pd.DataFrame()
+        return pd.DataFrame(), pd.DataFrame(), 0
     for p in job.files:
         ensure_readings_allowed(p)
         if not p.exists():
             print(f"skip {job.project_name}: missing {p.name}", flush=True)
-            return pd.DataFrame()
+            return pd.DataFrame(), pd.DataFrame(), 0
 
     con = _connect()
     try:
@@ -390,12 +391,19 @@ def process_site(job: SiteJob) -> pd.DataFrame:
 
     if not mm_parts:
         print(f"skip {job.project_name}: no customer-meter readings after join", flush=True)
-        return pd.DataFrame()
+        return pd.DataFrame(), pd.DataFrame(), n_registry
     mm = _combine_meter_months(mm_parts)
     days = pd.concat(day_parts, ignore_index=True)
     days = days.groupby(["month_start", "local_date"], as_index=False).agg(
         has_observed=("has_observed", "max")
     )
+    return mm, days, n_registry
+
+
+def process_site(job: SiteJob) -> pd.DataFrame:
+    mm, days, n_registry = load_meter_months(job)
+    if mm.empty:
+        return pd.DataFrame()
     out = _site_months(mm, days, job, n_registry)
     print(f"  kept site-months={len(out)}", flush=True)
     return out

@@ -34,7 +34,7 @@
       "type": "integer",
       "description": "Whole months from the site power-on date to this month.",
       "minimum": 0,
-      "maximum": 240
+      "maximum": 360
     },
     "n_customers": {
       "type": "integer",

@@ -58,4 +58,5 @@ Times are ET. The line between pre-sprint and sprint work is the git tag `geh202
 
 ### Hours 24–32 (feature freeze at 32)
 - Shared-record JSON Schema (`pawacast/sharing/schema.json`) and validator (`pawacast/sharing/validate.py`): H3 res-6 cell, month, months since power-on, n_customers (nearest 5, reject true n < 10), mean/P10/P50/P90 kWh per customer, business share (nearest 10%), tier 1/2, proof reference, ε. Coordinates, meter IDs and per-customer kWh are forbidden fields. Tests in `tests/test_sharing_schema.py`. `h3` added to requirements.
+- TRAIN-only aggregation (`pawacast/sharing/aggregate.py`): per-customer monthly totals → public record, k ≥ 10, n rounded to 5, business share to 10%, Laplace noise on mean/percentiles (clip 50 kWh, ε = 1.0, scale = (clip/n)/ε). 870 records from 18 TRAIN sites, 0 test sites. Label: “Tier 2 demo built from Renewvia open data (CC BY-SA 4.0)”. Example Olkiramatian 2022-08 (month 18, n=65): mean 4.59, P10/P50/P90 0.04/2.23/14.07. Typical |noise| on the mean: 5.0 kWh at n=10, 1.0 at n=50, 0.25 at n=200, 0.025 at n=2000. `results/sharing_records.json`, `results/sharing_demo.json`.
 ### Hours 32–48
