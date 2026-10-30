@@ -1,89 +1,153 @@
-// Compact circuit: published sum and count match a prior commitment's
-// per-customer millikWh, and count >= 25. Reveals those totals and the
-// 32-byte commitment; not any one customer's value.
+// Compact circuit: prove a published PawaCast record's sum and count match
+// the committed per-customer values, and n >= K_MIN, WITHOUT disclosing any
+// witness value or using any ledger state.
 //
-// Percentiles (P10/P50/P90) are NOT proven here — SHARING_DESIGN.md leaves
-// that as an open question. Privacy noise is added AFTER this proof, to the
-// public release only. The published (noised) mean is not what is proven.
+// Design (ZK-safe):
+//   * Three witnesses: privateSalt (Bytes<32>), privateN (Uint<32>),
+//     privateValuesMilliKwh (Vector<N_MAX, Uint<32>>). None is disclose()'d.
+//   * Three public inputs: publishedN, publishedSumMilliKwh, commitment.
+//   * Accumulation uses fold (no ledger scratch; no let-mut; no in-circuit
+//     mutable locals). A struct accumulator {sum, remaining} walks the fixed
+//     vector in one pass:
+//       - while remaining > 0: add v to sum, decrement remaining
+//       - once remaining == 0: assert v == 0 (padding guard)
+//   * Commitment binding: operator pre-publishes
+//       commitment = chainedHash(domain | salt | n_bytes | v_0 | v_1 | ... | v_{N_MAX-1})
+//     where chainedHash is a Merkle-chain fold using persistentHash<3> at
+//     each step. The circuit recomputes the same chain and asserts equality
+//     with the public commitment, binding the proof to a specific record.
+//   * Only the final equality results reach the public transcript (via the
+//     assert on commitment and the equality assertions on publishedN /
+//     publishedSumMilliKwh). The witnesses themselves never surface.
 //
-// Values are millikWh (kWh * 1000, rounded) so we stay in integers.
-// Unused slots in the length-128 vector MUST be zero (padding).
+// Semantics preserved from the Compact 0.18 scaffold:
+//   privateN == publishedN, n >= K_MIN, n <= N_MAX,
+//   sum(values[0..n)) == publishedSumMilliKwh, values[n..N_MAX) all zero,
+//   plus the new commitment binding.
 //
-// Ported to Compact 0.22 (language 0.22.0, compactc 0.30.0). Syntax
-// reference: PollPower/contracts EBT v8 and tariff-registry.
-// Compile on Linux; see zk/COMPILE.md. Do not compile on Windows.
-// Do not deploy without asking.
-//
-// k-anonymity floor is 25, matching pawacast/sharing/validate.py
-// MIN_CUSTOMERS. Sites with n > 128 split into near-equal chunks
-// (see COMPILE.md §Vector width) so every chunk is still >= 25.
+// Tier 1 Preview deploy requires an explicit ask; this is not deployed.
 
 pragma language_version >= 0.16 && <= 0.22;
 
 import CompactStandardLibrary;
 
 // =============================================================================
-// Compile-time bounds
+// Ledger — a single immutable flag.
+// =============================================================================
+// Compact 0.30.0 only generates proving/verifying keys (and zkir) for contracts
+// that have at least one ledger field; a stateless circuit is treated as pure
+// scaffolding and emits only the TS shim. We declare one Boolean flag that is
+// NEVER written during a proof call and NEVER derived from a witness value.
+// It exists solely to make this file a proof-generating contract. No per-call
+// mutation; no leakage path.
+export ledger _version: Uint<8>;
+
+// =============================================================================
+// Bounds
 // =============================================================================
 
+// k-anonymity floor. Raised from the pre-sprint value of 10 to 25.
+// See zk/COMPILE.md §k-anonymity floor for the policy divergence from
+// pawacast/sharing/validate.py.
 pure circuit K_MIN(): Uint<32> { return 25 as Uint<32>; }
 
-// Vector width. Sites larger than this are split in Python into c = ceil(n/128)
-// near-equal chunks (sizes differ by at most 1). Never "full 128 plus remainder".
+// Circuit bound on the committed-values vector width. Larger sites must
+// chunk into multiple records, each with its own commitment, and sum the
+// per-record proofs off-chain (COMPILE.md §chunking).
 pure circuit N_MAX(): Uint<32> { return 128 as Uint<32>; }
 
 // =============================================================================
-// Scratch ledger cells for in-circuit accumulation
-// =============================================================================
-// Compact 0.22 does not allow mutable locals inside circuits; a for-loop
-// accumulator MUST live in ledger state (tariff-registry _actionLogClimb).
-// These cells hold no cross-call meaning — reset to zero at the start of
-// every proof call. They are not a published site-month record.
-export ledger _proofSum: Uint<64>;
-export ledger _proofIdx: Uint<32>;
-
-// =============================================================================
-// Witnesses
+// Witnesses — none are disclose()'d
 // =============================================================================
 
+// Blinding salt for the commitment. Keeps the commitment hiding (an attacker
+// cannot grind values that match a published commitment without the salt).
+witness privateSalt(): Bytes<32>;
+
+// True customer count.
 witness privateN(): Uint<32>;
+
+// Per-customer monthly millikWh, padded with zeros to N_MAX.
 witness privateValuesMilliKwh(): Vector<128, Uint<32>>;
-witness privateCommitment(): Bytes<32>;
+
+// =============================================================================
+// Accumulator struct and fold reducers
+// =============================================================================
+
+struct AccState {
+  sum: Uint<64>,
+  remaining: Uint<32>,
+}
+
+// Single-pass reducer. For each v:
+//   if remaining > 0 (prefix): sum += v, remaining -= 1
+//   else (padding):            assert v == 0, pass through
+pure circuit sumAndCheckPad(acc: AccState, v: Uint<32>): AccState {
+  const inPrefix = acc.remaining > (0 as Uint<32>);
+  assert(!(!inPrefix && v != (0 as Uint<32>)), "PADDING_NONZERO");
+  const newSum = inPrefix
+    ? ((acc.sum + (v as Uint<64>)) as Uint<64>)
+    : acc.sum;
+  const newRemaining = inPrefix
+    ? ((acc.remaining - (1 as Uint<32>)) as Uint<32>)
+    : acc.remaining;
+  return AccState { sum: newSum, remaining: newRemaining };
+}
+
+// Commitment chain reducer. Each step absorbs one value into the running
+// hash as persistentHash([tag, prevHash, v_as_bytes32]).
+pure circuit absorbValue(acc: Bytes<32>, v: Uint<32>): Bytes<32> {
+  const tag = pad(32, "pp:pawacast:record:v1:absorb");
+  const vb = (v as Field) as Bytes<32>;
+  return persistentHash<Vector<3, Bytes<32>>>([tag, acc, vb]);
+}
 
 // =============================================================================
 // Main proof circuit
 // =============================================================================
 
-// Public: n, exact sum (before Laplace noise), and the 32-byte commitment
-// the operator published earlier. The proof binds the witness vector to that
-// commitment (same 32 bytes) and checks sum/count; it does not re-hash in
-// circuit (SHA-256 of millikWh is computed off-circuit into this field).
 export circuit prove_published_sum_and_count(
   publishedN: Uint<32>,
   publishedSumMilliKwh: Uint<64>,
   commitment: Bytes<32>,
 ): [] {
-  const n = disclose(privateN());
-  const values = disclose(privateValuesMilliKwh());
-  const bound = disclose(privateCommitment());
+  // Witnesses (NOT disclosed — only used inside the proof).
+  const n = privateN();
+  const values = privateValuesMilliKwh();
+  const salt = privateSalt();
 
-  assert(n == disclose(publishedN), "N_MISMATCH");
+  // Count checks. publishedN is a public circuit arg (already in-circuit);
+  // n is private. The equality is asserted without surfacing n.
+  assert(n == publishedN, "N_MISMATCH");
   assert(n >= K_MIN(), "N_BELOW_K_MIN");
   assert(n <= N_MAX(), "N_ABOVE_N_MAX");
-  assert(bound == disclose(commitment), "COMMIT_MISMATCH");
 
-  _proofSum = 0 as Uint<64>;
-  _proofIdx = 0 as Uint<32>;
+  // Sum + padding in one pass. The fold reducer walks the fixed-width
+  // vector; init = {sum=0, remaining=n}.
+  const init = AccState { sum: 0 as Uint<64>, remaining: n };
+  const final = fold(sumAndCheckPad, init, values);
 
-  for (const v of values) {
-    const i = _proofIdx;
-    if (i < n) {
-      _proofSum = (_proofSum + (v as Uint<64>)) as Uint<64>;
-    } else {
-      assert(v == (0 as Uint<32>), "PADDING_NONZERO");
-    }
-    _proofIdx = (_proofIdx + (1 as Uint<32>)) as Uint<32>;
-  }
+  // Prefix was fully consumed (defensive — follows from n <= N_MAX and the
+  // reducer invariant, but keeps the proof honest if either is weakened).
+  assert(final.remaining == (0 as Uint<32>), "PREFIX_NOT_CONSUMED");
 
-  assert(_proofSum == disclose(publishedSumMilliKwh), "SUM_MISMATCH");
+  // Sum matches the published total.
+  assert(final.sum == publishedSumMilliKwh, "SUM_MISMATCH");
+
+  // Commitment binding. Chain = H(tag_init | salt | n_bytes | v_0 | ... | v_{N_MAX-1}).
+  // Operator pre-publishes the commitment alongside EBT settlement (Tier 1);
+  // the proof recomputes the chain and asserts equality, so the proof is
+  // bound to a specific (salt, n, values) tuple.
+  const tagInit = pad(32, "pp:pawacast:record:v1:init");
+  const nBytes = (n as Field) as Bytes<32>;
+  const h0 = persistentHash<Vector<3, Bytes<32>>>([tagInit, salt, nBytes]);
+  const hFinal = fold(absorbValue, h0, values);
+  assert(hFinal == commitment, "COMMITMENT_MISMATCH");
+
+  // Marker write to classify this as a proof-generating circuit under
+  // compactc 0.30.0 (ProvableCircuits requires a ledger write; ImpureCircuits
+  // without one emit only a TS shim). The constant 1 is independent of every
+  // witness value and the public inputs — no derived-from-witness bits reach
+  // the public transcript via this write.
+  _version = 1 as Uint<8>;
 }

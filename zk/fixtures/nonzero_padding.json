@@ -2,9 +2,10 @@
   "public": {
     "publishedN": 25,
     "publishedSumMilliKwh": 125000,
-    "commitment": "57fc1ff66738754ed45f46d5959351b8cbef1e9ad39dfbd58d7037cfafd6d71b"
+    "commitment": "AUTO"
   },
   "witness": {
+    "privateSalt": "d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4",
     "privateN": 25,
     "privateValuesMilliKwh": [
       5000,
@@ -32,7 +33,7 @@
       5000,
       5000,
       5000,
-      1,
+      7,
       0,
       0,
       0,
@@ -135,9 +136,8 @@
       0,
       0,
       0
-    ],
-    "privateCommitment": "57fc1ff66738754ed45f46d5959351b8cbef1e9ad39dfbd58d7037cfafd6d71b"
+    ]
   },
   "expect": "reject",
-  "reason": "padding slot 26 is 1 (PADDING_NONZERO)"
+  "reason": "slot 25 (first padding slot after n=25) holds 7 instead of 0 \u2014 must trip PADDING_NONZERO on the fold reducer"
 }

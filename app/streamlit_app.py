@@ -462,16 +462,15 @@ def main():
         "values. Privacy noise is added after the proof, to the public release only."
     )
     st.markdown(
-        "Proof circuit compiles with compactc 0.30.0 (Midnight), not deployed; "
-        "proves sum and count against a prior commitment without revealing "
-        "per-customer values. Circuit compiles with compactc 0.30.0 (N_MAX 128, "
+        "Circuit compiles with compactc 0.30.0 (N_MAX 128, "
         "proving key 306 MB). Circuit logic tested on 4 fixtures (valid; too few "
         "customers; wrong commitment; non-zero padding). Not deployed; no on-chain "
         "proofs generated during the sprint."
     )
     st.markdown(
-        "**Tier 1 — PollPower-metered.** Readings are signed on the chip; the proof "
-        "is against EBT settlement. Strongest weight.\n\n"
+        "**Tier 1 — PollPower-metered.** Readings are signed on the chip, "
+        "and the commitment is designed to be published with the EBT settlement "
+        "record. Strongest weight.\n\n"
         "**Tier 2 — other operators.** Export from SteamaCo / SparkMeter / Odyssey, "
         "signed by the operator. The proof matches the commitment; it does not prove "
         "the meters were honest. Weighted at half of Tier 1."

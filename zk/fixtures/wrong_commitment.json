@@ -2,9 +2,10 @@
   "public": {
     "publishedN": 25,
     "publishedSumMilliKwh": 125000,
-    "commitment": "633e7b78804c0d08da37c83a830ec4588b11aa833d9c5899d2f1a076fc676c57"
+    "commitment": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
   },
   "witness": {
+    "privateSalt": "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3",
     "privateN": 25,
     "privateValuesMilliKwh": [
       5000,
@@ -135,9 +136,8 @@
       0,
       0,
       0
-    ],
-    "privateCommitment": "57fc1ff66738754ed45f46d5959351b8cbef1e9ad39dfbd58d7037cfafd6d71b"
+    ]
   },
   "expect": "reject",
-  "reason": "public commitment != privateCommitment (COMMIT_MISMATCH)"
+  "reason": "commitment is 0xff..ff, which does not match the chained persistentHash of (salt, n, values) \u2014 must trip COMMITMENT_MISMATCH"
 }

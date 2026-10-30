@@ -2,9 +2,10 @@
   "public": {
     "publishedN": 24,
     "publishedSumMilliKwh": 120000,
-    "commitment": "7c4cdbdcee61bc5732ce2a4c51c7d61fa106f891ab08c614639f305eb8b87c17"
+    "commitment": "AUTO"
   },
   "witness": {
+    "privateSalt": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2",
     "privateN": 24,
     "privateValuesMilliKwh": [
       5000,
@@ -135,9 +136,8 @@
       0,
       0,
       0
-    ],
-    "privateCommitment": "7c4cdbdcee61bc5732ce2a4c51c7d61fa106f891ab08c614639f305eb8b87c17"
+    ]
   },
   "expect": "reject",
-  "reason": "n < 25 violates k-anonymity (N_BELOW_K_MIN)"
+  "reason": "n=24 < K_MIN=25 \u2014 must trip N_BELOW_K_MIN before any padding/sum/commitment check"
 }

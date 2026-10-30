@@ -46,9 +46,7 @@ committed to earlier, without revealing any customer's values. Privacy noise
 is added after the proof, to the public release only. The published (noised)
 figure is not itself proven.
 
-Proof circuit compiles with compactc 0.30.0 (Midnight), not deployed; proves
-sum and count against a prior commitment without revealing per-customer
-values. Circuit compiles with compactc 0.30.0 (N_MAX 128, proving key 306 MB).
+Circuit compiles with compactc 0.30.0 (N_MAX 128, proving key 306 MB).
 Circuit logic tested on 4 fixtures (valid; too few customers; wrong
 commitment; non-zero padding). Not deployed; no on-chain proofs generated
 during the sprint. See `zk/COMPILE.md` and `SHARING_DESIGN.md`.

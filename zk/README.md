@@ -18,20 +18,24 @@ Compile on Linux — see [COMPILE.md](COMPILE.md). Do not compile on Windows.
 
 ## What is proven
 
-| Public (revealed) | Private (witness) |
+| Public (circuit arg, pre-published) | Private (witness, never leaks) |
 |---|---|
 | `publishedN` — customer count | `privateN` — same count |
 | `publishedSumMilliKwh` — exact sum of monthly kWh × 1000 (before noise) | `privateValuesMilliKwh[128]` — per-customer millikWh, padded with zeros |
-| `commitment` — 32-byte commitment the operator published earlier | `privateCommitment` — same 32 bytes |
+| `commitment` — 32-byte chained-hash binding | `privateSalt` — 32-byte blinding salt |
 
 Assertions:
 
-1. `privateN == publishedN`
-2. `privateN >= 25` (k-anonymity; `MIN_CUSTOMERS` in `validate.py`)
-3. `privateN <= 128` (sites larger than this split into near-equal chunks)
-4. `privateCommitment == commitment`
-5. `sum(values[0..n)) == publishedSumMilliKwh`
-6. padding slots `values[n..128)` are 0
+1. `privateN == publishedN` — `N_MISMATCH`
+2. `privateN >= 25` (k-anonymity; `MIN_CUSTOMERS` in `validate.py`) — `N_BELOW_K_MIN`
+3. `privateN <= 128` (larger sites split into near-equal chunks) — `N_ABOVE_N_MAX`
+4. `sum(values[0..n)) == publishedSumMilliKwh` — `SUM_MISMATCH`
+5. padding slots `values[n..128)` are 0 — `PADDING_NONZERO`
+6. `persistentHash(salt | n | values) == commitment` (chained) — `COMMITMENT_MISMATCH`
+
+The only ledger field is `_version: Uint<8>` (written as the constant `1` so
+compactc 0.30.0 emits proving keys). There are no `_proofSum` / `_proofIdx`
+scratch cells. Witnesses are never `disclose()`’d.
 
 ## What is not proven
 
@@ -49,6 +53,10 @@ customers, so K_MIN = 25 holds per chunk. See `pawacast/sharing/chunk.py`.
 ## Files
 
 - `record.compact` — the circuit
+- `COMPILE.md` — build command, output layout, k-anonymity floor, chunking, design
 - `TEST_PLAN.md` — the 4 fixtures
-- `run-fixtures.mjs` — offline assert/revert harness (needs compact-runtime)
-- `fixtures/valid_n25.json`, `n24_should_fail.json`, `wrong_commitment.json`, `dirty_padding.json`
+- `run-fixtures.mjs` — offline harness
+- `fixtures/valid_n25.json` — accept at k_min=25
+- `fixtures/n24_should_fail.json` — reject at n=24 (`N_BELOW_K_MIN`)
+- `fixtures/wrong_commitment.json` — reject (`COMMITMENT_MISMATCH`)
+- `fixtures/nonzero_padding.json` — reject (`PADDING_NONZERO`)
